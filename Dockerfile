@@ -1,0 +1,45 @@
+# WARNING ** WARNING ** WARNING webbot_watchdog uses Dockerfile.freeze version
+# Base image with VNC + Chromium GUI
+FROM mrcolorrain/vnc-browser:debian
+
+# -------------------------------
+# Install Python tooling
+# -------------------------------
+RUN apt-get update && \
+    apt-get install -y python3-full python3-venv curl build-essential && \
+    rm -rf /var/lib/apt/lists/*
+
+# -------------------------------
+# Create a Python virtual environment
+# -------------------------------
+RUN python3 -m venv /opt/playwright-env
+ENV PATH="/opt/playwright-env/bin:$PATH"
+
+# Upgrade pip inside the venv
+RUN pip install --upgrade pip
+
+# -------------------------------
+# Install Playwright and browsers
+# -------------------------------
+RUN pip install playwright
+RUN playwright install chromium
+
+# -------------------------------
+# Copy application scripts
+# -------------------------------
+WORKDIR /app
+COPY . /app
+
+# Install Python dependencies if requirements.txt exists
+RUN if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+# -------------------------------
+# Wrapper script to auto-run Python script and GUI
+# -------------------------------
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
+
+# Set wrapper as entrypoint
+ENTRYPOINT ["/start.sh"]
+CMD ["/usr/local/bin/customizable_entrypoint.sh"]
+

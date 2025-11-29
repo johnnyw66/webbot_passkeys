@@ -1,0 +1,23 @@
+# Core web automation
+playwright
+playwright-stealth==1.0.6
+
+# Networking / HTTP
+requests
+httpx
+paho-mqtt
+aiomqtt
+
+# Image processing
+Pillow
+
+# Serial communication
+pyserial
+
+# Build helper
+setuptools
+
+python-dateutil
+
+pyautogui
+

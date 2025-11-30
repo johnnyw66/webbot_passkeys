@@ -1,0 +1,1816 @@
+<html>
+<head>
+    <title>VTO/VET Schedule (Restful API)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        .infoblock {
+            background-color: white;
+        }
+
+        .infoline {
+            background-color: white;
+        }
+
+        .infotitle {
+            #text-align: center;
+            display: inline;
+            font-weight: bold;
+            background-color: white;
+        }
+
+        .infotext {
+            display: inline;
+            background-color: whitesmoke;
+        }
+
+        .claimbtn {
+            background-color: red;
+        }
+
+        .infobtn {
+            background-color: grey;
+        }
+
+        th {
+            font-family: "Times New Roman", Times, serif;
+            font-size: 16px;
+        }
+
+        td {
+            font-family: "Times New Roman", Times, serif;
+            font-size: 16px;
+        }
+
+        .opportunities-table {
+            background-color: yellow;
+            text-align: center;
+            font-family: "Times New Roman", Times, serif;
+            font-size: 20px;
+        }
+
+        .agents-table {
+            background-color: pink;
+            text-align: center;
+            font-family: "Times New Roman", Times, serif;
+            font-size: 20px;
+        }
+
+        .brokers-table {
+            background-color: pink;
+            text-align: center;
+            font-family: "Times New Roman", Times, serif;
+            font-size: 20px;
+        }
+
+        .webbots-table {
+            background-color: pink;
+            text-align: center;
+            font-family: "Times New Roman", Times, serif;
+            font-size: 20px;
+        }
+
+        .autoclaim {
+            //background-color: white;
+            Width: 100px;
+            display: inline;
+        }
+
+        .mintime {
+            //background-color: white;
+            Width: 160px;
+            display: inline;
+        }
+
+        .claimconfirm {
+            //background-color: white;
+            Width: 260px;
+            display: inline;
+        }
+
+        .polltime_fs {
+            //background-color: white;
+            Width: 160px;
+            display: inline;
+        }
+
+        fieldset {
+            //background: cyan;
+            border: 2px solid black;
+        }
+
+        #opportunities_activevtos {
+            background-color: orange;
+        }
+
+        #opportunities_activevets {
+            background-color: cyan;
+        }
+
+        #opportunities_acceptedvtos {
+            background-color: pink;
+        }
+
+        #opportunities_acceptedvets {
+            background-color: gold;
+        }
+
+        #opportunities_allvtos {
+            background-color: blue;
+        }
+
+        #opportunities_allvets {
+            background-color: green;
+        }
+
+        #agents {
+            background-color: gold;
+        }
+
+        #webbots {
+            background-color: green;
+        }
+
+        #brokers {
+            background-color: green;
+        }
+
+        #opportunities_allvtos, #opportunities_allvets {
+            //display: none;
+        }
+
+
+        table, th, td {
+            border: 1px solid;
+        }
+
+        #claim_msg_popup {
+            Width: 600px;
+            Height: 100px;
+            Background: white;
+            Box-sizing: border-box; /* for inside padding */
+            Padding: 10px;
+            /* for center */
+            Position: absolute;
+            top: 50%;
+            left: 50%;
+            Transform: translate(-50%,-50%);
+            border: 4px solid;
+            border-radius: 25px;
+            /* for hider 'none' or 'block' */
+            display: none;
+        }
+        /* Modal Header */
+        .modal-header {
+            padding: 2px 16px;
+            background-color: #5cb85c;
+            color: white;
+        }
+
+        /* Modal Body */
+        .modal-body {
+            padding: 2px 16px;
+        }
+
+        /* Modal Footer */
+        .modal-footer {
+            padding: 2px 16px;
+            background-color: #5cb85c;
+            color: white;
+        }
+
+
+        /* The Modal (background) */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            padding-top: 100px; /* Location of the box */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0,0,0); /* Fallback color */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
+
+        /* Modal Content */
+        .modal-content {
+            position: relative;
+            background-color: #fefefe;
+            margin: auto;
+            padding: 0;
+            border: 1px solid #888;
+            width: 80%;
+            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+            -webkit-animation-name: animatetop;
+            -webkit-animation-duration: 1.0s;
+            animation-name: animatetop;
+            animation-duration: 1.0s
+        }
+
+        /* Add Animation */
+        @-webkit-keyframes animatetop {
+            from {
+                top: -300px;
+                opacity: 0
+            }
+
+            to {
+                top: 0;
+                opacity: 1
+            }
+        }
+
+        @keyframes animatetop {
+            from {
+                top: -300px;
+                opacity: 0
+            }
+
+            to {
+                top: 0;
+                opacity: 1
+            }
+        }
+
+
+        /* The Close Button */
+        .close {
+            color: #aaaaaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+            .close:hover,
+            .close:focus {
+                color: #000;
+                text-decoration: none;
+                cursor: pointer;
+            }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js" type="text/javascript"></script>
+    <script src="configure.js" type="text/javascript"></script>
+    <script language="javascript" type="text/javascript">// Read secrets from URL fragment instead of hardcoding them here
+        // for example - paste below into your browser URL (modify path portion first)
+        // file:///Users/johnny/webbot_passkeys/schedule.htm#mqtt_host=linodeusercontent.com&employee_id=1234567&mqtt_username=MQTTUSER&mqtt_secret=MQTTPASSWD
+
+        const params = new URLSearchParams(location.hash.substring(1));
+
+        const host = params.get("mqtt_host");
+        const employee_id = params.get("employee_id");
+        const mqtt_username = params.get("mqtt_username");
+        const mqtt_secret = params.get("mqtt_secret");
+
+        // Optional: Show error if missing
+        if (!host || !employee_id || !mqtt_username || !mqtt_secret) {
+            document.body.innerHTML = "<b>Missing credentials in URL fragment.</b>";
+        }</script>
+
+
+    <script type="text/javascript" language="javascript">let mqtt;
+        const reconnectTimeout = 2000;
+        const port = 1884;
+
+        let opportunities = {}
+        let agents = new Map()
+        let brokers = new Map()
+        let webbots = new Map()
+
+        // Load previous data from localStorage
+        function loadSavedData() {
+            const savedData = localStorage.getItem("webbotTimes");
+            if (savedData) {
+                const parsed = JSON.parse(savedData);
+                parsed.forEach(([topic, value]) => {
+                    webbots.set(topic, value);
+                });
+            }
+        }
+
+        // Save `Map()` to localStorage
+        function saveData() {
+            localStorage.setItem("webbotTimes", JSON.stringify([...webbots]));
+        }
+
+
+        setInterval(update_agents_info, 1000);
+        setInterval(update_brokers_info, 1000);
+        setInterval(update_webbots_info, 1000);
+
+        function showPopUp(id) {
+            document.getElementById(id).style.display = "block";
+
+        }
+
+        function hidePopUp(id) {
+            document.getElementById(id).style.display = "none";
+        }
+
+
+        function onConnectionLost(responseObject) {
+            if (responseObject.errorCode !== 0) {
+                console.log("onConnectionLost:" + responseObject.errorMessage);
+                setTimeout(MQTTconnect, 3);
+            }
+        }
+
+        // called when a message arrives
+        function onMessageArrived(message) {
+            let topic = message.destinationName;
+            let retained = message.retained;
+
+            console.log(`on MessageArrived topic: ${topic} retained: ${retained} payload: ${message.payloadString}`)
+            if (topic.includes('initialise')) {
+                console.log('TODO !!!!');
+                let payloadString = message.payloadString;
+                console.log(payloadString);
+                //setPollTime(message) ;
+            }
+            else if (topic.includes('setclaimdate/vet')) {
+                console.log('*******CLAIM DATE!!!!!**************');
+                let payloadString = message.payloadString;
+                console.log(payloadString);
+                setVETClaimDate(message);
+            }
+            else if (topic.includes('setclaimschedule/vto')) {
+                setVTOCheckBoxes(message);
+            } else if (topic.includes('setclaimschedule/vet')) {
+                setVETCheckBoxes(message);
+            } else if (topic.includes('claimstatus')) {
+                onStatusMessageArrived(message);
+            } else if (topic.includes('punch')) {
+                onPunchMessage(message)
+            } else if (topic.includes('status') || topic.includes('sessionstatusupdate')) {
+                onPingStatusMessage(message);
+            } else if (topic.includes("/polltimer")) {
+                setPolltimer(message);
+            } else if (topic.includes("stealthmask")) {
+                setStealthMask(message);
+            } else if (topic.includes("stealthdelay")) {
+                updateStealthDelay(message);
+            } else if (topic.includes("/stealthpolltimer")) {
+                setStealthPolltimer(message);
+            }
+            else {
+                onOpportuntiesMessage(message);
+            }
+        }
+
+
+        function vibrate() {
+            const success = navigator.vibrate([200, 100, 200]);
+            if (success) {
+                console.log("✅ Your device vibrated!");
+            } else {
+                console.log("❌ Vibration not supported or blocked.");
+            }
+        }
+
+        function updateStealthDelay(message) {
+            let delay = message.payloadString;
+            let el = document.getElementById('stealthdelay');
+            if (el) {
+                el.innerHTML = `Stealth Delay (before grabbing) <b>${delay}</b>`;
+            }
+        }
+
+        function setStealthPolltimer(message) {
+            let polltimer = message.payloadString;
+            console.log(`<><><><><><><><><><><>setStealthPolltime <${polltimer}>`)
+            let el = document.getElementById('stealthpolltimer');
+            if (el) {
+                el.innerHTML = `Stealth Polltimer <b>${polltimer}</b>`;
+            }
+        }
+
+        function getDaysFromMask(mask) {
+            const days = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+            const orderedDays = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
+
+            const selectedDays = [];
+
+            for (let bit = 0; bit < 7; bit++) {
+                if (mask & (1 << bit)) {
+                    selectedDays.push(days[bit]);
+                }
+            }
+            return orderedDays.filter(day => selectedDays.includes(day)).join(', ');
+        }
+
+        function setStealthMask(message) {
+            let mask = message.payloadString;
+            let el = document.getElementById('stealthmask');
+            if (el) {
+                el.innerHTML = `Stealth Mask <b>${getDaysFromMask(mask)}</b> (${mask})`;
+            }
+        }
+
+        function setPolltimer(message) {
+            let polltimer = message.payloadString;
+            let el = document.getElementById('poll_timer');
+            if (el) {
+                el.innerHTML = `Poll Timer <b>${polltimer}</b>`;
+            }
+        }
+
+        function xetScheduleElement(id, bit, mask, state) {
+            let el = document.getElementById(name)
+            el.checked = ((mask & (1 << bit)) != 0);
+            if (el.checked) {
+                state[id] = true;
+            } else {
+                if (state[id]) {
+                    delete state[id];
+                }
+            }
+        }
+
+        function setScheduleElement(id, bit, mask, state) {
+            let el = document.getElementById(id);
+            if (el) {
+                el.checked = ((mask & (1 << bit)) != 0);
+                if (el.checked) {
+                    state[id] = true;
+                } else {
+                    if (state[id]) {
+                        delete state[id];
+                    }
+                }
+            }
+
+        }
+
+        function setVETClaimDate(message) {
+            let claimdate = message.payloadString;
+            console.log('setclaimdate/vet: ' + claimdate);
+            let el = document.getElementById('vet_claim_date');
+            if (el) {
+                el.innerHTML = `Say <b>'Echo, VET ON'</b> or <b>'Echo, VET OFF'</b> to your Alexa Devices. Current VET claim date: <b>${claimdate}</b>`;
+            }
+        }
+
+        function setVTOCheckBoxes(message) {
+            let mask = parseInt(message.payloadString);
+            console.log('setclaimschedule/vto: ' + mask);
+
+            let cbstate = JSON.parse(localStorage['CBState'] || '{}');
+
+            //return;
+            setScheduleElement('vto_day_sunday', 0, mask, cbstate);
+            setScheduleElement('vto_day_monday', 1, mask, cbstate);
+            setScheduleElement('vto_day_tuesday', 2, mask, cbstate);
+            setScheduleElement('vto_day_wednesday', 3, mask, cbstate);
+            setScheduleElement('vto_day_thursday', 4, mask, cbstate);
+            setScheduleElement('vto_day_friday', 5, mask, cbstate);
+            setScheduleElement('vto_day_saturday', 6, mask, cbstate);
+            console.log(cbstate);
+
+            localStorage.CBState = JSON.stringify(cbstate);
+
+
+        }
+
+        function setVETCheckBoxes(message) {
+
+            let mask = parseInt(message.payloadString);
+            console.log('setclaimschedule/vet: ' + mask);
+            let cbstate = JSON.parse(localStorage['CBState'] || '{}');
+
+            setScheduleElement('vet_day_sunday', 0, mask, cbstate);
+            setScheduleElement('vet_day_monday', 1, mask, cbstate);
+            setScheduleElement('vet_day_tuesday', 2, mask, cbstate);
+            setScheduleElement('vet_day_wednesday', 3, mask, cbstate);
+            setScheduleElement('vet_day_thursday', 4, mask, cbstate);
+            setScheduleElement('vet_day_friday', 5, mask, cbstate);
+            setScheduleElement('vet_day_saturday', 6, mask, cbstate);
+            console.log(cbstate);
+
+            localStorage.CBState = JSON.stringify(cbstate);
+        }
+
+        function onStatusMessageArrived(message) {
+            let payloadString = message.payloadString;
+            console.log(payloadString);
+            statusMessage = JSON.parse(payloadString);
+            pu_message = `Claim Attempt Result: ${statusMessage.result} ID: ${statusMessage.opportunity_id}`;
+            console.log(pu_message);
+            generatePopup(pu_message, 5000, 'claim_popup_message')
+        }
+
+
+        function generatePopup(message, duration, popupElementName) {
+            var el = document.getElementById(popupElementName);
+            el.innerHTML = message;
+            parent = el.parentElement;
+            showPopUp(parent.id);
+            setTimeout(hidePopUp, duration, parent.id);
+        }
+
+
+        // Filter utc time to local day time string
+        function utcFilter(utc) {
+            var date = new Date(utc * 1000);
+            return date
+        }
+        function botFilter(utc) {
+
+            // Create a Date object
+            const date = new Date(utc);
+
+            // Helper function to get ordinal suffix (st, nd, rd, th)
+            const getOrdinalSuffix = (day) => {
+                if (day > 3 && day < 21) return 'th'; // Covers 11th to 19th
+                const suffixes = ['th', 'st', 'nd', 'rd'];
+                return suffixes[day % 10] || 'th';
+            };
+
+            // Format date
+            const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+            const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+            const dayName = days[date.getDay()];
+            const day = date.getDate();
+            const month = months[date.getMonth()];
+            const year = date.getFullYear();
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+
+            // Construct formatted string
+            const formattedDate = `${dayName} ${day}${getOrdinalSuffix(day)} ${month} ${year} ${hours}:${minutes}`;
+
+            return formattedDate;
+        }
+
+
+        // Filter utc time to local day time string
+        function botFilterDeprecated(utc) {
+            const date = new Date(utc);
+            // Format as a readable string
+            const formattedDate = date.toISOString(); // Example: "2025-07-05T14:22:49.946Z"
+
+
+            return formattedDate
+        }
+
+        // Filter date to local day time string
+        function dayFilter(dt) {
+            var date = new Date(dt);
+            return date.toDateString()
+        }
+
+        // Place holder filter for opportunity time/date string
+        function timeFilter(dt) {
+            return dt
+        }
+
+        function elapseFilter(last_heard) {
+
+            dt = Math.max(0, (new Date().getTime() - last_heard.getTime()) / 1000)
+
+
+            if (dt < 60) {
+                return `${Math.round(dt)} second(s) ago.`
+            } else if (dt < 3600) {
+                return `${Math.round(dt / 60)} minute(s) ago.`
+            } else {
+                return `${Math.round(dt / 3600)} hour(s) ago.`
+            }
+        }
+
+        function webbotPingStatus(payloadString, host) {
+            console.log(`webbotPingStatus host: '${host}' payloadString: ${payloadString}`);
+
+            let utc;
+            let version = 'legacy';
+            let referrer = 'unknown';
+
+            try {
+                const parsed = JSON.parse(payloadString);
+                console.log(`webbotPingStatus: parsed ${parsed}`);
+                if (typeof parsed === 'object' && parsed !== null && 'timestamp' in parsed) {
+                    utc_start = parsed.utc_time * 1000;
+                    utc = parsed.timestamp * 1000;
+                    version = parsed.version;
+                    referrer = parsed.referrer;
+                } else {
+                    utc = parseFloat(payloadString) * 1000; // fallback to old format
+                    utc_start = utc;
+                }
+            } catch (e) {
+                // Not JSON, assume old format
+                utc = parseFloat(payloadString) * 1000;
+                utc_start = utc;
+            }
+
+            if (!webbots.has(host)) {
+                webbots.set(host, { hostname: host, last_heard: utc, utc_start: utc_start, version: version, referrer: referrer });
+            } else {
+                let entry = webbots.get(host);
+                entry.last_heard = utc;
+                webbots.set(host, entry);
+            }
+            update_webbots_info();
+
+        }
+
+        function agentPingStatus(payloadString) {
+
+            console.log(`agentPingStatus payloadString: [${payloadString}]`);
+            if (payloadString == "") {
+                return;
+            }
+
+            let pingStatus = JSON.parse(payloadString)
+            let last_heard = new Date((pingStatus.utc_start + pingStatus.time_passed) * 1000)
+            console.log(`last_heard: ${last_heard}`)
+            pingStatus.type = 'AGENT';
+            pingStatus.last_heard = last_heard // add extra field
+            if ((pingStatus.type.includes("SESSIONAGENT") || pingStatus.gsm_running)) {
+                agents.set(pingStatus.hostname, pingStatus)
+            }
+            update_agents_info()
+        }
+
+        function brokerPingStatus(payloadString) {
+            console.log(`brokerPingStatus payloadString: ${payloadString}`);
+            let pingStatus = JSON.parse(payloadString)
+            let last_heard = new Date((pingStatus.utc_start + pingStatus.time_passed) * 1000)
+
+            brokers.set(pingStatus.hostname, pingStatus)
+            update_brokers_info()
+        }
+
+        function onPingStatusMessage(message) {
+
+            let payloadString = message.payloadString;
+            let topic = message.destinationName;
+            //let type = topic.includes('webbot') ? 'WEBBOT' : ((typeof pingStatus.type !== "undefined") && (pingStatus.type !== null)) ? pingStatus.type : 'AGENT'
+            let type = topic.includes('webbot') ? 'WEBBOT' : 'AGENT'
+
+            console.log(`onPingStatusMessage ${topic}`);
+
+            switch (type) {
+
+                case 'WEBBOT':
+                    // unique host is embedded in the mqtt 'topic'
+                    webbotPingStatus(payloadString, topic)
+                    break
+                case 'SESSIONAGENT':
+                case 'AGENT':
+                    agentPingStatus(payloadString)
+                    break;
+                case 'BROKER':
+                    brokerPingStatus(payloadString)
+                    break;
+                default:
+                    break;
+            }
+
+
+        }
+
+        // This can now be set off on a Timer Interval
+        function update_agents_info() {
+
+            let wantedElements = ['hostname', 'utc_start', 'time_passed', 'time_elapsed', 'last_heard']
+            let translateElements = {
+                'hostname': { 'title': 'Agent Name' },
+                'utc_start': { 'title': 'AtoZ Login', 'filter': utcFilter },
+                'time_passed': { 'title': 'Running Time (secs)', 'filter': timeFilter },
+                'last_heard': { 'title': 'Last Heard', 'filter': elapseFilter }
+
+            }
+
+            let agentsTable = Array.from(agents.values())
+            agentsTable.sort((a, b) => b.utc_start - a.utc_start)
+
+            buildTable(agentsTable,
+                "<b>Agent Status</b> " + new Date(),
+                "all-agents-table",
+                wantedElements, translateElements, 'hostname', agentButtonCreator)
+
+        }
+
+
+        function update_webbots_info() {
+
+            let wantedElements = ['hostname', 'version', 'referrer', 'utc_start', 'last_heard']
+            let translateElements = {
+                'hostname': { 'title': 'WebBot Name' },
+                'version': { 'title': 'Version' },
+                'referrer': { 'title': 'Referrer' },
+                'utc_start': { 'title': 'Start', 'filter': botFilter },
+                'last_heard': { 'title': 'Last Heard', 'filter': botFilter }
+
+            }
+
+
+            let webbotsTable = Array.from(webbots.values())
+            webbotsTable.sort((a, b) => b.utc_start - a.utc_start)
+            buildTable(webbotsTable,
+                "<b>Webbot Status</b> " + new Date(),
+                "all-webbots-table",
+                wantedElements, translateElements, 'hostname', webbotButtonCreator)
+
+        }
+
+        function update_brokers_info() {
+
+            let wantedElements = ['hostname', 'utc_start', 'time_passed', 'time_elapsed', 'last_heard', 'claiming', 'auto_claim']
+            let translateElements = {
+                'hostname': { 'title': 'Broker Name' },
+                'claiming': { 'title': 'Claim' },
+                'auto_claim': { 'title': 'Auto Claim' },
+                'utc_start': { 'title': 'Broker Start Up', 'filter': utcFilter },
+                'time_passed': { 'title': 'Running Time (secs)', 'filter': timeFilter },
+                'last_heard': { 'title': 'Last Heard', 'filter': elapseFilter }
+            }
+
+
+            let brokersTable = Array.from(brokers.values())
+            brokersTable.sort((a, b) => b.utc_start - a.utc_start)
+
+            buildTable(brokersTable,
+                "<b>Brokers Status</b> " + new Date(),
+                "all-brokers-table",
+                wantedElements, translateElements, 'hostname', brokerButtonCreator)
+
+        }
+
+        function onPunchMessage(message) {
+            let payloadString = message.payloadString;
+            let topic = message.destinationName;
+            let qos = message.qos;
+            let retained = message.retained;
+            let duplicate = message.duplicate;
+
+            console.log("onMessageArrived topic:" + topic);
+            console.log("onMessageArrived qos:" + qos);
+            console.log("onMessageArrived retained:" + retained);
+            console.log("onMessageArrived duplicate:" + duplicate);
+            console.log("onMessageArrived payload:" + payloadString);
+
+            jsonTable = [JSON.parse(payloadString)]
+            let wantedElements = ['date', 'punch_times', 'working']
+            let translateElements = {
+                'date': { 'title': 'Day' },
+                'punch_times': { 'title': 'Punch Times' },
+                'working': { 'title': 'Working' }
+            }
+            buildTable(jsonTable,
+                "<b>Punch Status</b> ",
+                "all-punches-table",
+                wantedElements, translateElements, 'hostname', punchButtonCreator)
+
+            console.log(`------------------++++++++++++++++++-------------->${payloadString}`)
+
+        }
+
+        function onOpportuntiesMessage(message) {
+
+            let payloadString = message.payloadString;
+            let topic = message.destinationName;
+
+            let payloadBytes = message.payloadBytes;
+            let qos = message.qos;
+            let retained = message.retained;
+            let duplicate = message.duplicate;
+
+            //console.log("onMessageArrived topic:"+topic);
+            //console.log("onMessageArrived qos:"+qos);
+            //console.log("onMessageArrived retained:"+retained);
+            //console.log("onMessageArrived duplicate:"+duplicate);
+            //console.log("onMessageArrived payload:"+payloadString);
+
+            let wantedElements = ['workgroup', 'start_time_local', 'start_time', 'opportunity_type', 'minutes_to_cover_opportunity']
+            let translateElements = {
+                'start_time': { 'title': 'Day', 'filter': dayFilter },
+                'opportunity_type': { 'title': 'Type' },
+                'workgroup': { 'title': 'Job' },
+                'start_time_local': { 'title': 'Time', 'filter': timeFilter },
+                'minutes_to_cover_opportunity': { 'title': 'Mins' }
+            }
+
+            jsonTable = JSON.parse(payloadString)
+            jsonTable.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
+
+            const topicTable = new Map();
+
+            topicTable.set(`opportunities/api/active/vto`, { 'tableTitle': 'Active VTOs', 'listName': 'vto-active-table', 'buttonType': claimButtonCreator, 'autoClaimFn': autoClaimVTO });
+            topicTable.set(`opportunities/api/active/vet`, { 'tableTitle': 'Active VETs', 'listName': 'vet-active-table', 'buttonType': claimVETButtonCreator, 'autoClaimFn': autoClaimVET });
+
+            topicTable.set(`opportunities/api/accepted/vto`, { 'tableTitle': 'Accepted VTOs', 'listName': 'vto-accepted-table', 'buttonType': infoButtonCreator });
+            topicTable.set(`opportunities/api/accepted/vet`, { 'tableTitle': 'Accepted VETs', 'listName': 'vet-accepted-table', 'buttonType': infoButtonCreator });
+
+            topicTable.set(`opportunities/api/vet`, { 'tableTitle': 'All VETs', 'listName': 'all-vets-table', 'buttonType': infoButtonCreator });
+            topicTable.set(`opportunities/api/vto`, { 'tableTitle': 'All VTOs', 'listName': 'all-vtos-table', 'buttonType': infoButtonCreator });
+
+            let topicValue = topicTable.get(topic)
+            console.log('Got Topic ' + topic)
+            opportunities[topicValue['tableTitle']] = jsonTable
+
+            buildTable(jsonTable,
+                topicValue['tableTitle'],
+                topicValue['listName'],
+                wantedElements, translateElements, 'opportunity_id', topicValue['buttonType']);
+            // 16th April 2025 - Only show active vets if there are any
+            if (topic.includes("active/vet")) {
+                setActiveVets(jsonTable.length > 0)
+            }
+            console.log("JSON Done")
+            let autoClaim_fn = topicValue['autoClaimFn'];
+            if (typeof autoClaim_fn != 'undefined') {
+                autoClaim_fn(jsonTable);
+            }
+
+        }
+
+        function attemptAutoClaim() {
+            generatePopup(`Auto Claim attempt...`, 3000, 'claim_popup_message');
+            setTimeout(MQTTconnect, 3);
+        }
+
+        function setStealthMaskButton(mask) {
+            console.log('PUBLISH stealthmask: ' + mask)
+            message = new Paho.MQTT.Message("" + mask);
+            message.destinationName = `opportunities/${employee_id}/stealthmask`;
+            message.qos = 1;
+            message.retained = true;
+            mqtt.send(message);
+            //generatePopup(`Set Mask ${mask}...`, 3000, 'claim_popup_message');
+        }
+
+        function buildDayMaskVTO() {
+            let mask = ((document.getElementById('vto_day_sunday').checked ? 1 : 0) |
+                ((document.getElementById('vto_day_monday').checked ? 1 : 0) << 1) |
+                ((document.getElementById('vto_day_tuesday').checked ? 1 : 0) << 2) |
+                ((document.getElementById('vto_day_wednesday').checked ? 1 : 0) << 3) |
+                ((document.getElementById('vto_day_thursday').checked ? 1 : 0) << 4) |
+                ((document.getElementById('vto_day_friday').checked ? 1 : 0) << 5) |
+                ((document.getElementById('vto_day_saturday').checked ? 1 : 0) << 6));
+            console.log("VTO Mask = " + mask);
+            return mask;
+        }
+
+
+        function buildDayMaskVET() {
+            let mask = ((document.getElementById('vet_day_sunday').checked ? 1 : 0) |
+                ((document.getElementById('vet_day_monday').checked ? 1 : 0) << 1) |
+                ((document.getElementById('vet_day_tuesday').checked ? 1 : 0) << 2) |
+                ((document.getElementById('vet_day_wednesday').checked ? 1 : 0) << 3) |
+                ((document.getElementById('vet_day_thursday').checked ? 1 : 0) << 4) |
+                ((document.getElementById('vet_day_friday').checked ? 1 : 0) << 5) |
+                ((document.getElementById('vet_day_saturday').checked ? 1 : 0) << 6));
+            console.log("VET Mask = " + mask);
+            return mask;
+        }
+
+        function get_polltime() {
+            let cb = document.getElementsByClassName('polltime_sel');
+            for (el of cb) {
+                if (el.checked) {
+                    console.log("Polltime Checked " + el.id + " value " + el.value);
+                    return el.value;
+                }
+            }
+        }
+
+        function get_stealthdelay() {
+            let cb = document.getElementsByClassName('polltime_sel');
+            for (el of cb) {
+                if (el.checked) {
+                    console.log("Stealth Delay Checked " + el.id + " value " + el.value);
+                    return el.value;
+                }
+            }
+        }
+
+        function change_stealthdelay(el) {
+            console.log("Changed Stealth Delay ");
+        }
+
+        function change_polltime(el) {
+            console.log("Changed PollTime ");
+        }
+
+        function resetWebbots() {
+            console.log('resetWebbots');
+            webbots = new Map();
+            vibrate();
+        }
+
+        function cleanClaims() {
+            console.log('clean claims');
+            message = new Paho.MQTT.Message("cleanClaims requested");
+            message.destinationName = `opportunities/${employee_id}/cleanclaims`;
+            message.qos = 1;
+            message.retained = false;
+            mqtt.send(message);
+            vibrate();
+        }
+
+        function resetAgents() {
+            console.log('resetAgents');
+
+            message = new Paho.MQTT.Message("reset agents requested");
+            message.destinationName = `opportunities/api/clearagents`;
+            message.qos = 1;
+            message.retained = false;
+            mqtt.send(message);
+
+            agents = new Map();
+            vibrate();
+
+
+        }
+
+
+        //function resetHost(host) {
+        //    message = new Paho.MQTT.Message(JSON.stringify({ "cmd": 'reset' }));
+        //    message.destinationName = `cmd/${host}`;
+        //    console.log(`reset Host ${host}`)
+        //    message.qos = 1;
+        //    message.retained = false;
+        //    mqtt.send(message);
+        //
+        //}
+
+        function getMinVETTime() {
+            let minTime = document.getElementById('_todayVETOnly').checked ? 0 : document.getElementById('_2hours').checked ? 120 : document.getElementById('_8hours').checked ? 480 : 600
+            return minTime;
+        }
+
+        function setNodeRedBrokerClaimMask() {
+            const maskVTO = buildDayMaskVTO();
+            const stealthDelay = get_stealthdelay();
+
+            generatePopup(`Setting Restful Stealth Delay ${stealthDelay} and Mask... ${maskVTO}`, 3000, 'claim_popup_message');
+            setVTOClaimSchedule(maskVTO);
+            // Our Node-Red Server
+
+            //let maskVET = buildDayMaskVET();
+            //setVETClaimSchedule(maskVET);
+
+            //setVETClaimMinTime(getMinVETTime());
+
+            sendStealthDelayMessage(stealthDelay);
+        }
+
+        function wakeUpBots() {
+            console.log('MQTT wakebots')
+            message = new Paho.MQTT.Message("WAKE FROM WEB");
+            message.destinationName = `wakeup`;
+            message.qos = 1;
+            mqtt.send(message);
+            vibrate();
+        }
+
+        function autoClaimVTO(jsonTable) {
+
+
+            if (document.getElementById('vto_autoclaim_enabled').checked) {
+                console.log("autoClaimVTO")
+                dayTruthTable = [document.getElementById('vto_day_sunday').checked,
+                document.getElementById('vto_day_monday').checked,
+                document.getElementById('vto_day_tuesday').checked,
+                document.getElementById('vto_day_wednesday').checked,
+                document.getElementById('vto_day_thursday').checked,
+                document.getElementById('vto_day_friday').checked,
+                document.getElementById('vto_day_saturday').checked];
+                //generatePopup('AutoClaim: Checking VTOs',3000,'claim_popup_message')
+                autoClaim(jsonTable, dayTruthTable, 420);
+            }
+        }
+
+        function autoClaimVET(jsonTable) {
+            //
+            if (document.getElementById('vet_autoclaim_enabled').checked) {
+                console.log("autoClaimVET")
+                dayTruthTable = [document.getElementById('vet_day_sunday').checked,
+                document.getElementById('vet_day_monday').checked,
+                document.getElementById('vet_day_tuesday').checked,
+                document.getElementById('vet_day_wednesday').checked,
+                document.getElementById('vet_day_thursday').checked,
+                document.getElementById('vet_day_friday').checked,
+                document.getElementById('vet_day_saturday').checked];
+
+                let minTime = document.getElementById('_todayVETOnly').checked ? 0 : document.getElementById('_2hours').checked ? 120 : document.getElementById('_8hours').checked ? 480 : 600
+
+
+                //generatePopup(`AutoClaim: Checking VETs minTime = ${minTime} mins`,3000,'claim_popup_message')
+                autoClaim(jsonTable, dayTruthTable, minTime, document.getElementById('_todayVETOnly').checked);
+            }
+        }
+
+        function autoClaim(jsonTable, dayTruthTable, minDuration, claimForToDayOnly = false) {
+            for (let opportunity of jsonTable) {
+                console.log(opportunity); // Will display contents of the object inside the array
+                let dateStr = opportunity['start_time_local'];
+                let duration = opportunity['minutes_to_cover_opportunity'];
+                let opportunity_id = opportunity['opportunity_id'];
+                let opportunity_type = opportunity['opportunity_type'];
+                // Extract Day from dateStr
+                const d = new Date(dateStr);
+                let day = d.getDay();
+                let today = new Date();
+
+                opportunityIsToday = today.toDateString() == d.toDateString();
+                if ((dayTruthTable[day] || (claimForToDayOnly && opportunityIsToday)) && duration >= minDuration) {
+                    console.log(`Try and Claim ${opportunity_type} ${dateStr} duration: ${duration} mins  id: ${opportunity_id}`)
+                    makeClaim(opportunity_id);
+                }
+            }
+
+
+
+        }
+
+        function onFailed() {
+            console.log("onFailed ");
+        }
+
+
+        function onConnect() {
+            // Once a connection has been made, make a subscription and send a message.
+            //console.log("Connected---------------------------------------------------------------> ");
+            mqtt.subscribe(`opportunities/api/vet`);
+            mqtt.subscribe(`opportunities/api/vto`);
+            mqtt.subscribe(`opportunities/api/polltimer`);
+            mqtt.subscribe(`opportunities/api/accepted/vto`);
+            mqtt.subscribe(`opportunities/api/accepted/vet`);
+            mqtt.subscribe(`opportunities/api/active/vto`);
+            mqtt.subscribe(`opportunities/api/active/vet`);
+            mqtt.subscribe(`opportunities/api/claimstatus`);
+            mqtt.subscribe(`opportunities/api/status/#`);
+            mqtt.subscribe(`sessionstatusupdate`);
+            mqtt.subscribe(`opportunities/api/brokerstatus/#`);
+            mqtt.subscribe(`opportunities/api/setclaimschedule/vto`);
+            mqtt.subscribe(`opportunities/api/initialise`);
+            mqtt.subscribe(`opportunities/api/setclaimdate/vet`);
+            mqtt.subscribe(`opportunities/${employee_id}/stealthdelay`);
+            mqtt.subscribe(`opportunities/${employee_id}/stealthmask`);
+            mqtt.subscribe(`opportunities/api/stealthpolltimer`);
+            mqtt.subscribe(`opportunities/${employee_id}/setclaimschedule/vto`);
+            mqtt.subscribe(`webbot/status/#`);
+
+        }
+
+        // Make VTO or VET claim
+        function makeClaim(id) {
+            console.log('MQTT makeClaim ' + id)
+            message = new Paho.MQTT.Message("" + id);
+            message.destinationName = `opportunities/${employee_id}/claim`;
+            message.qos = 1;
+            mqtt.send(message);
+
+        }
+        function setVTOClaimSchedule(mask) {
+            console.log('PUBLISH setVTOClaimSchedule: MQTT setClaimSchedule ' + mask)
+            message = new Paho.MQTT.Message("" + mask);
+            message.destinationName = `opportunities/${employee_id}/setclaimschedule/vto`;
+            message.qos = 1;
+            message.retained = true;
+            mqtt.send(message);
+
+        }
+
+        function setVETClaimSchedule(mask) {
+            console.log('PUBLISH setVETClaimSchedule: MQTT setClaimSchedule ' + mask)
+            message = new Paho.MQTT.Message("" + mask);
+            message.destinationName = `opportunities/${employee_id}/setclaimschedule/vet`;
+            message.qos = 1;
+            message.retained = true;
+            mqtt.send(message);
+
+        }
+
+
+        function setVETClaimMinTime(mintime) {
+
+            console.log('PUBLISH setVETClaimMinTime: MQTT setVETClaimMinTime ' + mintime)
+
+            message = new Paho.MQTT.Message("" + mintime);
+            message.destinationName = `opportunities/${employee_id}/setclaimmintime/vet`;
+            message.qos = 1;
+            message.retained = true;
+            mqtt.send(message);
+
+        }
+
+
+        function sendStealthDelayMessage(time) {
+            console.log('MQTT Set Stealth Delay ' + time)
+            message = new Paho.MQTT.Message("" + time);
+            message.destinationName = `opportunities/${employee_id}/stealthdelay`;
+            message.qos = 1;
+            message.retained = true;
+            mqtt.send(message);
+
+        }
+
+        function setPollTime(time) {
+            console.log('MQTT setPollTime ' + time)
+            message = new Paho.MQTT.Message(JSON.stringify({ "poll_time": time }));
+            message.destinationName = `opportunities/${employee_id}/initialise`;
+            message.qos = 1;
+            message.retained = true;
+            mqtt.send(message);
+
+            message = new Paho.MQTT.Message("" + time);
+            message.destinationName = `opportunities/api/polltimer`;
+            message.qos = 1;
+            message.retained = true;
+            mqtt.send(message);
+
+        }
+
+        function MQTTconnect() {
+            console.log("connecting to " + host + " " + port);
+            var x = Math.floor(Math.random() * 10000);
+            var cname = "orderform-" + x;
+            mqtt = new Paho.MQTT.Client(host, port, "/ws", cname);
+            mqtt.onConnectionLost = onConnectionLost;
+            mqtt.onMessageArrived = onMessageArrived;
+            //document.write("connecting to "+ host);
+            var options = {
+                timeout: 10,
+                userName: mqtt_username,
+                password: mqtt_secret,
+                onSuccess: onConnect,
+                onFailure: onFailed,
+                keepAliveInterval: 360
+            };
+
+            mqtt.connect(options); //connect
+        }
+
+        function setActiveVets(show) {
+            const el = document.getElementById("opportunities_activevets");
+            el.style.display = show ? "block" : "none";
+        }</script>
+
+</head>
+
+<body>
+    <h1>VET/VTO Restful API</h1>
+    <script>MQTTconnect();</script>
+
+    <div id="wakebots_div">
+        <input type="button" id="wakebots_btn" onclick='wakeUpBots()' value='Wake Up Bots' name="wakebots">
+    </div>
+
+    <div id="poll_timer" hidden="true">
+        Poll timer!!
+    </div>
+
+    <div id="stealthmask">
+        Stealth Mask
+    </div>
+
+    <div id="stealthdelay">
+        Stealth Delay
+    </div>
+
+    <div id="stealthpolltimer" hidden="true">
+        Stealth Polltimer
+    </div>
+
+    <div id='attempt_autoclaim_btn' hidden="true">
+        <input type="button" id="autoclaim_attempt" onclick='attemptAutoClaim()' value='Attempt Auto Claim' name="Enabled">
+    </div>
+
+    <div id='stealth_mask_btns'>
+        <input type="button" id="setstealthoff" onclick='setStealthMaskButton(0)' value='Stealth Mask Off' name="Enabled">
+        <input type="button" id="setstealthon" onclick='setStealthMaskButton(65)' value='Stealth Mask On' name="Enabled">
+    </div>
+
+    <div id="claim_msg_popup">
+        <button id=”close-bnt” onclick="hidePopUp('claim_msg_popup')">Close</button>
+        <div id='claim_popup_message'>
+        </div>
+    </div>
+
+    <!-- The Modal -->
+    <div id="infoModal" class="modal">
+        <!-- Modal content -->
+
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close">&times;</span>
+                <h2 id='modal_title'>Inactive Reason</h2>
+            </div>
+            <div class="modal-body">
+                <p></p>
+                <p id='modal_text'>Some text in the Modal..</p>
+            </div>
+            <div class="modal-footer">
+                <h3 id='modal_id'>Modal Footer</h3>
+            </div>
+        </div>
+
+    </div>
+
+    <div id='opportunities_activevtos'>
+        Active VTOs
+        <table class="opportunities-table" id="vto-active-table" align="center" border="1px"></table>
+
+        <fieldset class='autoclaim' id='autoclaim_vto'>
+            <legend>
+                Auto Claim:
+                <input type="checkbox" id="vto_autoclaim_enabled" class="save-cb-state" name="Enabled">
+                <label for="vto_autoclaim_enabled">Enabled</label>
+            </legend>
+            <div>
+                <input type="checkbox" id="vto_day_monday" class="save-cb-state" name="Monday">
+                <label for="vto_day_monday">Mo</label>
+            </div>
+            <div>
+                <input type="checkbox" id="vto_day_tuesday" class="save-cb-state" name="Tuesday">
+                <label for="vto_day_monday">Tu</label>
+            </div>
+            <div>
+                <input type="checkbox" id="vto_day_wednesday" class="save-cb-state" name="Wednesday">
+                <label for="vto_day_wednesday">We</label>
+            </div>
+            <div>
+                <input type="checkbox" id="vto_day_thursday" class="save-cb-state" name="Thursday">
+                <label for="vto_day_wednesday">Th</label>
+            </div>
+            <div>
+                <input type="checkbox" id="vto_day_friday" class="save-cb-state" name="Friday">
+                <label for="vto_day_friday">Fr</label>
+            </div>
+            <div>
+                <input type="checkbox" id="vto_day_saturday" class="save-cb-state" name="Saturday">
+                <label for="vto_day_saturday">Sa</label>
+            </div>
+            <div>
+                <input type="checkbox" id="vto_day_sunday" class="save-cb-state" name="Sunday">
+                <label for="vto_day_sunday">Su</label>
+            </div>
+        </fieldset>
+
+    </div>
+
+    <div id='mask_btn'>
+
+        <fieldset class='polltime_fs' id='polltime_fs_id' onchange="change_stealthdelay(this)">
+
+            <legend>Stealth Delay time (secs):</legend>
+
+            <div>
+                <input type="radio" id="_0s" class="polltime_sel" name="polltime" value="0">
+                <label for="_0s">0</label>
+            </div>
+
+            <div>
+                <input type="radio" id="_1s" class="polltime_sel" name="polltime" value="1">
+                <label for="_1s">1</label>
+            </div>
+
+            <div>
+                <input type="radio" id="_2s" class="polltime_sel" name="polltime" value="2" checked>
+                <label for="_2s">2</label>
+            </div>
+
+            <div>
+                <input type="radio" id="_3s" class="polltime_sel" name="polltime" value="3">
+                <label for="_3s">3</label>
+            </div>
+
+            <div>
+                <input type="radio" id="_4s" class="polltime_sel" name="polltime" value="4">
+                <label for="_4s">4</label>
+            </div>
+
+            <div>
+                <input type="radio" id="_5s" class="polltime_sel" name="polltime" value="5">
+                <label for="_5s">5</label>
+            </div>
+            <div>
+                <input type="radio" id="_7s" class="polltime_sel" name="polltime" value="7">
+                <label for="_7s">7</label>
+            </div>
+            <div>
+                <input type="radio" id="_10s" class="polltime_sel" name="polltime" value="10">
+                <label for="_10s">10</label>
+            </div>
+            <div>
+                <input type="radio" id="_15s" class="polltime_sel" name="polltime" value="15">
+                <label for="_15s">15</label>
+            </div>
+            <div>
+                <input type="radio" id="_20s" class="polltime_sel" name="polltime" value="20">
+                <label for="_20s">20</label>
+            </div>
+            <div>
+                <input type="radio" id="_30s" class="polltime_sel" name="polltime" value="30">
+                <label for="_30s">30</label>
+            </div>
+            <div>
+                <input type="radio" id="_1min" class="polltime_sel" name="polltime" value="60">
+                <label for="_1min">60</label>
+            </div>
+            <div>
+                <input type="radio" id="_2mins" class="polltime_sel" name="polltime" value="120">
+                <label for="_2mins">120</label>
+            </div>
+        </fieldset>
+
+        <input type="button" id="mqqtmask_btn" onclick='setNodeRedBrokerClaimMask()' value='Set API Stealth Delay' name="???">
+
+    </div>
+
+
+    <div id='opportunities_activevets' style="display: none;">
+        Active VETs
+        <table class="opportunities-table" id="vet-active-table" align="center" border="1px"></table>
+        <fieldset class='autoclaim' id='autoclaim_vet' style="display: none;" disabled>
+            <legend>
+                Auto Claim:
+                <input type="checkbox" id="vet_autoclaim_enabled" class="save-cb-state" name="Enabled">
+                <label for="vet_autoclaim_enabled">Enabled</label>
+            </legend>
+            <div>
+                <input type="checkbox" id="vet_day_monday" class="save-cb-state" name="Monday">
+                <label for="vet_day_monday">Mo</label>
+            </div>
+            <div>
+                <input type="checkbox" id="vet_day_tuesday" class="save-cb-state" name="Tuesday">
+                <label for="vet_day_monday">Tu</label>
+            </div>
+            <div>
+                <input type="checkbox" id="vet_day_wednesday" class="save-cb-state" name="Wednesday">
+                <label for="vet_day_wednesday">We</label>
+            </div>
+            <div>
+                <input type="checkbox" id="vet_day_thursday" class="save-cb-state" name="Thursday">
+                <label for="vet_day_wednesday">Th</label>
+            </div>
+            <div>
+                <input type="checkbox" id="vet_day_friday" class="save-cb-state" name="Friday">
+                <label for="vet_day_friday">Fr</label>
+            </div>
+            <div>
+                <input type="checkbox" id="vet_day_saturday" class="save-cb-state" name="Saturday">
+                <label for="vet_day_saturday">Sa</label>
+            </div>
+            <div>
+                <input type="checkbox" id="vet_day_sunday" class="save-cb-state" name="Sunday">
+                <label for="vet_day_sunday">Su</label>
+            </div>
+        </fieldset>
+
+        <fieldset class='mintime' id='mintime_vet' style="display: none;" disabled">
+            <legend>Minimum time (mins):</legend>
+            <div>
+                <input type="radio" id="_todayVETOnly" class="save-rb-state" name="mintime" value="_todayVETOnly">
+                <label for="_todayVETOnly">0 (Today only)</label>
+            </div>
+
+            <div>
+                <input type="radio" id="_2hours" class="save-rb-state" name="mintime" value="_2hours">
+                <label for="_2hours">120</label>
+            </div>
+
+            <div>
+                <input type="radio" id="_8hours" class="save-rb-state" name="mintime" value="_8hours">
+                <label for="_8hours">480</label>
+            </div>
+
+            <div>
+                <input type="radio" id="_10hours" class="save-rb-state" name="mintime" value="_10hours" checked>
+                <label for="_10hours">600</label>
+            </div>
+
+
+        </fieldset>
+
+        <fieldset class='claimconfirm' id='vetclaim_lock'>
+            <legend>Claim VET confirm</legend>
+            <div>
+                <input type="checkbox" id="claim_lock_checkbox" name="locky">
+                <label for="claim_lock_checkbox">Tick to activate VET claim buttons</label>
+            </div>
+
+        </fieldset>
+
+        <div id="vet_claim_date"></div>
+        <div style="display: none;">
+            <p>You can also say <b>'Cancel Work'</b> or <b>'Work Today'</b>. Make sure you check the dates are correct. Date grabbing does not have a minimum threshold on the work time.</p>
+        </div>
+
+    </div>
+
+    <div id='opportunities_acceptedvtos'>
+        Accepted VTOs
+        <table class="opportunities-table" id="vto-accepted-table" align="center" border="1px"></table>
+    </div>
+
+    <div id='opportunities_acceptedvets'>
+        Accepted VETs
+        <table class="opportunities-table" id="vet-accepted-table" align="center" border="1px"></table>
+    </div>
+
+    <div id='opportunities_allvets'>
+        ALL VETs
+        <table class="opportunities-table" id="all-vets-table" align="center" border="1px"></table>
+    </div>
+
+    <div id='opportunities_allvtos'>
+        ALL VTOs
+        <table class="opportunities-table" id="all-vtos-table" align="center" border="1px"></table>
+    </div>
+
+    <div id='agents'>
+        Opportunities Agents
+        <table class="agents-table" id="all-agents-table" align="center" border="1px"></table>
+    </div>
+
+    <div id='brokers' hidden="true">
+        Brokers heard
+        <table class="brokers-table" id="all-brokers-table" align="center" border="1px"></table>
+    </div>
+
+    <div id='webbots'>
+        Webbots heard
+        <table class="webbots-table" id="all-webbots-table" align="center" border="1px"></table>
+    </div>
+
+    <div id='punches' hidden="true">
+        Today's Punches
+        <table class="punches-table" id="all-punches-table" align="center" border="1px"></table>
+    </div>
+
+    <div id='reset_btns'>
+        <input type="button" id="reset_webbots_btn" onclick='resetWebbots()' value='Reset Webbots' name="resetbots">
+        <input type="button" id="reset_agents_btn" onclick='resetAgents()' value='Reset Agents' name="resetagents">
+        <input type="button" id="wakebots_btn" onclick='wakeUpBots()' value='Wake Up Bots' name="wakebots_">
+        <input type="button" id="cleanclaims_btn" onclick='cleanClaims()' value='Clean Claims' name="cleanclaims_">
+    </div>
+
+    <script>// Get the modal
+        let modal = document.getElementById("infoModal");
+
+        // Get the button that opens the modal
+        //var btn = document.getElementById("myBtn");
+        //console.log("btn "+btn) ;
+
+        // Get the <span> element that closes the modal
+        let span = document.getElementsByClassName("close")[0];
+
+        // When the user clicks the button, open the modal
+        //btn.onclick = function() {
+        //  console.log("BTN CLICK") ;
+        //  modal.style.display = "block";
+        //}
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function () {
+            modal.style.display = "none";
+        }
+
+        function format_last_header(secs) {
+            if (secs < 60) {
+                return `${Math.round(secs)} seconds`
+            } else if (secs < 3600) {
+                return `${Math.round(secs / 60)} minute(s)`
+            } else {
+                return `${Math.round(secs / 3600)} hour(s)`
+            }
+        }
+
+        function build_agent_info_text(agent_info) {
+            let now = new Date()
+
+            let last_heard = new Date((agent_info.utc_start + agent_info.time_passed) * 1000)
+            let diff = (now.getTime() - last_heard.getTime()) / 1000
+            return `${agent_info.hostname} (IP: ${agent_info.ipaddress}  OTP Device Index: ${agent_info.otp_device_index}) - Last heard ${last_heard}, ${format_last_header(diff)} ago.  Agent Type: ${agent_info.type}.`;
+        }
+
+        function build_broker_info_text(broker_info) {
+            let now = new Date()
+
+            let last_heard = new Date((broker_info.utc_start + broker_info.time_passed) * 1000)
+            let diff = (now.getTime() - last_heard.getTime()) / 1000
+            return `${broker_info.hostname} (IP: ${broker_info.ipaddress}) - Last heard ${last_heard}, ${format_last_header(diff)} ago. MQTT: ${broker_info.mqtt_user}@${broker_info.mqtt_host}`;
+        }
+
+
+        function build_webbot_info_text(webbot_info) {
+            let now = new Date()
+
+            //let last_heard = 'TODO LASTHEARD '; // new Date((webbot_info.utc_start)
+            //let diff = (now.getTime() - last_heard.getTime()) / 1000
+            return `${webbot_info.hostname}`;
+        }
+
+        function build_opportunity_info(opportunity_info) {
+            return `<div class='infoblock'><div class='infoline'><div class='infotitle'>Inactive Reason:</div><div class='infotext'>${opportunity_info.active ? 'Opportunity is still active!' : opportunity_info.inactive_reason}</div></div><div class='infoline'><div class='infotitle'>Signup(Created):</div><div class='infotext'>${opportunity_info.signup_start_time}.</div></div></div>`;
+        }
+
+        function displayAgentInfo(agent_info) {
+            displayModal('Agent Info', build_agent_info_text(agent_info), agent_info.hostname)
+        }
+
+        function displayBrokerInfo(broker_info) {
+            displayModal('Broker Info', build_broker_info_text(broker_info), broker_info.hostname)
+        }
+
+        function displayWebbotInfo(webbot_info) {
+            displayModal('Webbot Info', build_webbot_info_text(webbot_info), webbot_info.hostname)
+        }
+
+        function displayInfo(opportunity_info) {
+            displayModal('Opportunity Info.', build_opportunity_info(opportunity_info), opportunity_info.opportunity_id)
+        }
+
+        function displayModal(title_text, main_text, footer_text) {
+
+            modal.style.display = "block";
+
+            let el = document.getElementById("modal_title");
+            el.innerHTML = title_text;
+
+            el = document.getElementById("modal_text");
+            el.innerHTML = main_text;
+
+            el = document.getElementById("modal_id");
+            el.innerHTML = footer_text;
+
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function (event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }</script>
+
+    <script>function buttonCreate(name, id, klassname, clickCallback) {
+            var button = document.createElement('input');
+            button.type = "button";
+            button.className = klassname;
+            button.value = name;
+            button.onclick = clickCallback;
+            button.id = id
+            return button;
+        }
+
+        function claimVETEntry(entry) {
+            if (document.getElementById("claim_lock_checkbox").checked) {
+                claimEntry(entry);
+            } else {
+                alert("VET Claim - You need to confirm!")
+            }
+        }
+
+        function punchEntry(entry) {
+            punchID = entry.target.id;
+            console.log('Punch:  punchID: ' + punchID);
+            //makeClaim(oppID);
+        }
+
+        function claimEntry(entry) {
+            oppID = entry.target.id;
+            console.log('Claim:  oppID: ' + oppID);
+            generatePopup(`Attempt Claim`, 1500, 'claim_popup_message');
+            makeClaim(oppID);
+        }
+
+        function agentEntry(entry) {
+            hostID = entry.target.id;
+            console.log('Agent Info:  hostID: ' + hostID);
+            const result = agents.get(hostID)
+            displayAgentInfo(result);
+        }
+
+        function brokerEntry(entry) {
+            hostID = entry.target.id;
+            console.log('Broker Info:  hostID: ' + hostID);
+            const result = brokers.get(hostID)
+            displayBrokerInfo(result);
+        }
+
+        function webbotEntry(entry) {
+            hostID = entry.target.id;
+            console.log('Webbot Info:  hostID: ' + hostID);
+            const result = webbots.get(hostID)
+            displayWebbotInfo(result);
+        }
+
+        function infoEntry(entry) {
+            oppID = entry.target.id;
+            console.log('Info:  oppID: ' + oppID);
+            // Now search through all are JSON reponses for each Opportunity type and
+            // match the opportunity_id - returning on the first match.
+            for (oppArray in opportunities) {
+                jsonTable = opportunities[oppArray]
+                const result = jsonTable.filter(opportunity => opportunity['opportunity_id'] == oppID);
+                if (result.length > 0) {
+                    displayInfo(result[0]);
+                    return;
+                }
+            }
+        }
+
+        function translateColumnName(translateElements, colName) {
+            return translateElements[colName]['title'];
+        }
+
+
+        function filterColumn(txt, filter) {
+            if (typeof filter == 'undefined') {
+                return txt
+            }
+            return filter(txt)
+        }
+
+        function getFilterFromColumnName(translateElements, colName) {
+            return translateElements[colName]['filter'];
+        }
+
+        function punchButtonCreator(punchID) {
+            return buttonCreate('info', punchID, 'punchbtn', punchEntry);
+        }
+
+        function claimVETButtonCreator(oppID) {
+            return buttonCreate('claim', oppID, 'claimbtn', claimVETEntry);
+        }
+
+        function claimButtonCreator(oppID) {
+            return buttonCreate('claim', oppID, 'claimbtn', claimEntry);
+        }
+
+
+        function infoButtonCreator(oppID) {
+            //console.log(`infoButtonCreator ${oppID}`);
+            return buttonCreate('info', oppID, 'infobtn', infoEntry);
+        }
+
+        function agentButtonCreator(agentID) {
+            return buttonCreate('info', agentID, 'infobtn', agentEntry);
+        }
+
+        function brokerButtonCreator(brokerID) {
+            return buttonCreate('info', brokerID, 'infobtn', brokerEntry);
+        }
+
+
+        function webbotButtonCreator(webbotID) {
+            console.log(`webbotButtonCreator ${webbotID}`);
+            return buttonCreate('info', webbotID, 'infobtn', webbotEntry);
+        }
+
+        function buildTable(list, name, tableID, wantedElements, translateElements, idKey, buttonCreator) {
+
+            //minutes_to_cover_opportunity
+            //id = opportunity_id
+            //opportunity_type
+            //start_time_local
+            //workgroup
+
+            var cols = [];
+
+            for (var i = 0; i < list.length; i++) {
+                for (var k in list[i]) {
+                    if (cols.indexOf(k) === -1) {
+                        // Push all keys to the array
+                        if (wantedElements.includes(k)) {
+                            //console.log('Pushing ' + k)
+                            cols.push(k);
+                        }
+                    }
+                }
+            }
+
+            // Create a table element
+            var table = document.createElement("table");
+
+            // Create table row tr element of a table
+            var tr = table.insertRow(-1);
+
+            for (var i = 0; i < cols.length; i++) {
+
+                // Create the table header th element
+                var theader = document.createElement("th");
+                theader.innerHTML = translateColumnName(translateElements, cols[i]);
+                // Append columnName to the table row
+                tr.appendChild(theader);
+            }
+            // Button column
+            var theader = document.createElement("th");
+            theader.innerHTML = '';
+            tr.appendChild(theader);
+
+            // Adding the data to the table
+            for (var i = 0; i < list.length; i++) {
+
+                // Create a new row
+                trow = table.insertRow(-1);
+                oppID = list[i][idKey];
+                trow.id = 'table-' + tableID + '-row-' + oppID;
+                for (var j = 0; j < cols.length; j++) {
+                    var cell = trow.insertCell(-1);
+                    // Inserting the cell at particular place
+                    filter = getFilterFromColumnName(translateElements, cols[j])
+
+                    cell.innerHTML = filterColumn(list[i][cols[j]], filter);
+                }
+                var cell = trow.insertCell(-1);
+                var button = buttonCreator(oppID)
+                cell.appendChild(button)
+            }
+
+            // Add the newly created table containing json data
+            var el = document.getElementById(tableID);
+            el.innerHTML = name;
+            el.appendChild(table);
+        }</script>
+
+    <script>// Save and Load input states with the class 'save-cb-state'
+        // Thanks to Julian Hansen http://www.marcorpsa.com/ee/t2641.html 2017
+        (function () {
+            // variable to store our current state
+            let cbstate, rbstate;
+
+            window.addEventListener("beforeunload", saveData);  // 6th March 2025 - save Webbot data when unloading this page
+
+            // bind to the onload event
+            window.addEventListener('load', function () {
+
+
+                // Get the current state from localstorage
+                // State is stored as a JSON string
+                console.log('***LOAD***')
+                loadSavedData();  // 6th March 2025 - Load webbot Map on loading this pge.
+                cbstate = JSON.parse(localStorage['CBState'] || '{}');
+
+                // Loop through state array and restore checked
+                // state for matching elements
+                for (let id in cbstate) {
+                    let el = document.querySelector('input[id="' + id + '"]');
+                    if (el) el.checked = true;
+                }
+
+                // Get all checkboxes that you want to monitor state for
+                let cb = document.getElementsByClassName('save-cb-state');
+
+                // Loop through results and ...
+                for (let i = 0; i < cb.length; i++) {
+                    console.log('Adding Event Listener to  ' + cb[i].id)
+
+                    //bind click event handler
+                    cb[i].addEventListener('click', function (evt) {
+                        // If checkboxe is checked then save to state
+                        if (this.checked) {
+                            cbstate[this.id] = true;
+                            console.log('Saving ' + this.id + ' state')
+                        }
+
+                        // Else remove from state
+                        else if (cbstate[this.id]) {
+                            console.log('Deleting ' + this.id + ' state')
+                            delete cbstate[this.id];
+                        }
+
+                        // Persist state
+                        localStorage.CBState = JSON.stringify(cbstate);
+                    }); // addEventListener click Callback
+                } // Check Boxes ForLoop
+                console.log('RBState Check');
+                rbstate = JSON.parse(localStorage['RBState'] || '{}');
+
+                for (let id in rbstate) {
+                    let el = document.querySelector('input[id="' + id + '"]');
+                    if (el) el.checked = true;
+                    console.log('RB selecting ' + el.id)
+                }
+
+                let rb = document.getElementsByClassName('save-rb-state');
+                for (let i = 0; i < rb.length; i++) {
+                    console.log('Adding Event Listener to  ' + rb[i].id);
+                    rb[i].addEventListener('click', function (evt) {
+                        //
+                        let chk = this.id;
+                        console.log('RB Select ' + chk);
+
+                        let rb = document.getElementsByClassName('save-rb-state');
+                        for (let i = 0; i < rb.length; i++) {
+                            delete rbstate[rb[i].id];
+                        }
+                        rbstate[chk] = true;
+
+                        localStorage.RBState = JSON.stringify(rbstate);
+
+                    });
+                }
+
+            }); // Load Event function
+        })();</script>
+
+</body>
+</html>

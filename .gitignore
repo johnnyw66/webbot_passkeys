@@ -1,4 +1,5 @@
-
+*_flattened.*
+*_flattend*
 chromedata
 firefoxdata
 *.json
@@ -8,6 +9,7 @@ firefoxdata
 .DS_Store
 testclaim.sh
 cleanclaims.sh
+configure.js
 configure.py
 configure.sh
 user_data/

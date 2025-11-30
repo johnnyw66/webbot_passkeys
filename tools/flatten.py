@@ -89,7 +89,14 @@ with open(output_file, "w", encoding="utf-8") as f:
 
 print(f"✅ Updated HTML written to: {output_file}")
 
+
 # Warn about any constants in configure.js not found in the HTML
 missing_consts = set(secrets.keys()) - set(processed_consts.keys())
 for name in missing_consts:
     print(f"⚠️ WARNING: Constant '{name}' from {js_file} was NOT found in any <script> block of HTML.")
+
+print("")
+print(f"Use flattened version of the HTML file ({output_file}) or simply copy and paste the following URL into your local chrome browser.")
+print("")
+print(f"file://{os.path.abspath(html_file)}#" + "&".join(f"{k}={v}" for k,v in secrets.items()))
+print("")

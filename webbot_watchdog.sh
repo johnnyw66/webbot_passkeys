@@ -63,14 +63,38 @@ ensure_image_exists() {
   fi
 }
 
-start_container() {
-  local referrer="$1"
 
-  log "Starting Docker container... referrer: $referrer"
-  CONTAINER_ID=$(docker run --env referrer="$referrer" -e VNC_PASSWORD="mypassword" --device /dev/bus/usb:/dev/bus/usb --privileged -p 5901:5900 -p 6080:6080 -d --name "$DOCKER_CONTAINER_NAME" "$DOCKER_IMAGE_NAME")
-  wait_for_x11 "$DOCKER_CONTAINER_NAME"
-  docker exec -d "$DOCKER_CONTAINER_NAME" bash -c "cd /app && xterm -hold -e ./webbot.sh"
-  log "Container for $DOCKER_IMAGE_NAME created. Container ID is $CONTAINER_ID"
+start_container() {
+    local referrer="$1"
+
+    # Ensure environment variables are set
+    if [ -z "$VH_DEVICE" ] || [ -z "$VH_PORT" ] || [ -z "$VH_HOST" ] || [ -z "$VNC_PASSWORD" ]; then
+        log "ERROR: One or more required environment variables (VH_DEVICE, VH_PORT, VH_HOST, VNC_PASSWORD) are not set."
+        return 1
+    fi
+
+    log "Starting Docker container $DOCKER_CONTAINER_NAME... referrer: $referrer"
+    log "Using VH_HOST=$VH_HOST VH_PORT=$VH_PORT VH_DEVICE=$VH_DEVICE VNC_PASSWORD=$VNC_PASSWORD"
+
+    CONTAINER_ID=$(docker run -d \
+        --name "$DOCKER_CONTAINER_NAME" \
+        -p 5901:5900 -p 6080:6080 \
+        --device /dev/bus/usb:/dev/bus/usb \
+        --privileged \
+        -e referrer="$referrer" \
+        -e VH_DEVICE="$VH_DEVICE" \
+        -e VH_PORT="$VH_PORT" \
+        -e VH_HOST="$VH_HOST" \
+        -e VNC_PASSWORD="$VNC_PASSWORD" \
+        "$DOCKER_IMAGE_NAME")
+
+    # Wait for X11 (if you have this function defined)
+    wait_for_x11 "$DOCKER_CONTAINER_NAME"
+
+    # Start the webbot script in a detached xterm
+    docker exec -d "$DOCKER_CONTAINER_NAME" bash -c "cd /app && xterm -hold -e ./webbot.sh"
+
+    echo "Container for $DOCKER_IMAGE_NAME created. Container ID is $CONTAINER_ID"
 }
 
 stop_container() {

@@ -34,7 +34,7 @@ HTTPX_RETRIES=4
 # MQTT Credentials
 MQTT_USERNAME = 'mqtt_user'
 MQTT_SECRET = 'mys3cret'
-MQTT_HOSTNAME = '100-71-192-43.ip.linodeusercontent.com'
+MQTT_BROKER = '100-71-192-43.ip.linodeusercontent.com'
 MQTT_PORT = 1883
 
 # Email credentials

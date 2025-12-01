@@ -397,7 +397,7 @@ async def check_inbox(processed_emails, wanted_email, email_event):
 async def subscribe_and_process(topic: str, message_handler: callable):
     while True:
         try:
-            async with AsyncMQTTClient(hostname=configure.MQTT_HOSTNAME, port=configure.MQTT_PORT,
+            async with AsyncMQTTClient(hostname=configure.MQTT_BROKER, port=configure.MQTT_PORT,
                                        username=configure.MQTT_USERNAME, password=configure.MQTT_SECRET) as client:
                 await client.subscribe(topic, qos=1)
                 async for message in client.messages:
@@ -843,7 +843,7 @@ async def farm_capture_challenge_over_mqtt(question,challenge):
     while True:
         try:
             async with AsyncMQTTClient(
-                hostname=configure.MQTT_HOSTNAME,
+                hostname=configure.MQTT_BROKER,
                 port=configure.MQTT_PORT,
                 username=configure.MQTT_USERNAME,
                 password=configure.MQTT_SECRET
@@ -1231,7 +1231,7 @@ def ping_factory(referrer, hostname, ping_event_wrapper):
                 while True:
                     try:
                         async with AsyncMQTTClient(
-                            hostname=configure.MQTT_HOSTNAME,
+                            hostname=configure.MQTT_BROKER,
                             port=configure.MQTT_PORT,
                             username=configure.MQTT_USERNAME,
                             password=configure.MQTT_SECRET
@@ -2102,7 +2102,7 @@ def update_opportunities_factory(page, last_hash, use_graphql =  False):
             logging.info("Updating Opportunities over MQTT")
             last_hash.hash = opportunities_hash
             #employee_id = configure.ATOZ_EMPLOYEE_ID
-            async with AsyncMQTTClient(hostname=configure.MQTT_HOSTNAME, port=configure.MQTT_PORT,
+            async with AsyncMQTTClient(hostname=configure.MQTT_BROKER, port=configure.MQTT_PORT,
                                     username=configure.MQTT_USERNAME, password=configure.MQTT_SECRET) as client:
                 await client.publish(f"opportunities/api/vto", json.dumps(sorted_vto), retain=True, qos=1)
                 await client.publish(f"opportunities/api/vet", json.dumps(sorted_vet), retain=True, qos=1)
@@ -2246,7 +2246,7 @@ def ping_status_factory(time_started, hostname, ipaddress, poll_timer_wrapper):
         ping_message.update(results) #build completed message
         #logging.info(f"Pinging ... {ping_message}")
 
-        async with AsyncMQTTClient(hostname=configure.MQTT_HOSTNAME, port=configure.MQTT_PORT,
+        async with AsyncMQTTClient(hostname=configure.MQTT_BROKER, port=configure.MQTT_PORT,
                                 username=configure.MQTT_USERNAME, password=configure.MQTT_SECRET) as client:
 
               await client.publish(f'opportunities/api/status/restful_{hostname}',

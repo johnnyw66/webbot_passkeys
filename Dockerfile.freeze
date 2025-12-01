@@ -24,6 +24,15 @@ RUN pip install playwright
 RUN playwright install chromium
 
 # -------------------------------
+# Install VirtualHere ARM64 client
+# -------------------------------
+RUN curl -fsSL https://www.virtualhere.com/sites/default/files/usbclient/vhclientarm64 -o /usr/local/bin/vhclientarm64 \
+    || echo "WARNING: vhclientarm64 not downloaded"
+
+RUN chmod +x /usr/local/bin/vhclientarm64 || true
+
+
+# -------------------------------
 # Copy application scripts
 # -------------------------------
 WORKDIR /app

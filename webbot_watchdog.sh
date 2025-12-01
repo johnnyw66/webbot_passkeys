@@ -69,8 +69,7 @@ start_container() {
 
     # Ensure environment variables are set
     if [ -z "$VH_DEVICE" ] || [ -z "$VH_PORT" ] || [ -z "$VH_HOST" ] || [ -z "$VNC_PASSWORD" ]; then
-        log "ERROR: One or more required environment variables (VH_DEVICE, VH_PORT, VH_HOST, VNC_PASSWORD) are not set."
-        return 1
+        log "WARNING: One or more required environment variables (VH_DEVICE, VH_PORT, VH_HOST, VNC_PASSWORD) are not set. - No vhclient will run."
     fi
 
     log "Starting Docker container $DOCKER_CONTAINER_NAME... referrer: $referrer"

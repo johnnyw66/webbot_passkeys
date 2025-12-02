@@ -7,10 +7,10 @@ if [ -n "$VH_HOST" ] && [ -n "$VH_PORT" ] && [ -n "$VH_DEVICE" ] && [ -x "/usr/l
     vhclient &
 
     # Give it a few seconds to initialize
-    sleep 4
+    sleep 2
     echo "Adding remote hub and claiming device..."
     vhclient -t "MANUAL HUB ADD,${VH_HOST}:${VH_PORT}"
-    sleep 4
+    sleep 2
     vhclient -t "USE,${VH_DEVICE}"
 else
     echo "VH_HOST, VH_PORT, or VH_DEVICE not set. Skipping VirtualHere client setup."

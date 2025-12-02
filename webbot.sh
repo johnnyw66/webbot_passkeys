@@ -5,9 +5,7 @@ touch /root/.Xauthority
 while [[ true ]]; do
  echo "*** WARNING - CHECK YOU HAVE vhclient running if using a remote FIDO device ***"
  python3 webbot.py $@
- #python3 message.py "From host `hostname`. Webbot terminated ...`date`"
- #./announce.sh "We have logged out of $hostname"
- python3 pause.py
+ sleep 1
 done
 
 

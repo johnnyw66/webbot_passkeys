@@ -2579,15 +2579,10 @@ async def authenticate_with_playwright(main_url, headless=True, javascript_enabl
         # Warning CHROMIUM is BUGGY in HEADLESS mode.
         # Warning FIREFOX is BUGGY in NON Javascript mode
         if (configure.USE_PLAYWRIGHT_BROWSER):
-            raise ValueError("Playwright browsers not supported - set configure.USE_PLAYWRIGHT_BROWSER to False.")
-            if (True):
-                browser = await playwright.firefox.launch(headless=headless, args=["--disable-infobars"])
-                context = await browser.new_context()
-                page = await context.new_page()  # Fallback if no page exists
-            else:
-                # Dockerfile.keys 
-                context = await playwright.firefox.launch_persistent_context(user_data_dir="/data/firefox", headless=headless, args=["--disable-infobars"])
-                page = await context.new_page()
+            raise ValueError("Playwright browsers no longer supported - set configure.USE_PLAYWRIGHT_BROWSER to False.")
+            browser = await playwright.firefox.launch(headless=headless, args=["--disable-infobars"])
+            context = await browser.new_context()
+            page = await context.new_page()  # Fallback if no page exists
 
         else:
             # Create a persistent context (like a real user profile)

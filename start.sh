@@ -2,16 +2,16 @@
 
 # start off vhclient
 
-if [ -n "$VH_HOST" ] && [ -n "$VH_PORT" ] && [ -n "$VH_DEVICE" ] && [ -x "/usr/local/bin/vhclientarm64" ] ; then
+if [ -n "$VH_HOST" ] && [ -n "$VH_PORT" ] && [ -n "$VH_DEVICE" ] && [ -x "/usr/local/bin/vhclient" ] ; then
     echo "Starting VirtualHere client in background..."
-    vhclientarm64 &
+    vhclient &
 
     # Give it a few seconds to initialize
     sleep 4
 
     echo "Adding remote hub and claiming device..."
-    vhclientarm64 -t "MANUAL HUB ADD,${VH_HOST}:${VH_PORT}"
-    vhclientarm64 -t "USE,${VH_DEVICE}"
+    vhclient -t "MANUAL HUB ADD,${VH_HOST}:${VH_PORT}"
+    vhclient -t "USE,${VH_DEVICE}"
 else
     echo "VH_HOST, VH_PORT, or VH_DEVICE not set. Skipping VirtualHere client setup."
 fi

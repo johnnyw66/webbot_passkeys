@@ -1,5 +1,5 @@
 import time
 while True:
- print("Running startup")
+ print(f"Running startup: {time.asctime()}")
  time.sleep(5)
 

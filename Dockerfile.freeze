@@ -27,10 +27,16 @@ RUN playwright install chromium
 # Install VirtualHere client
 # -------------------------------
 
-# Docker automatically sets TARGETARCH when building
-ARG TARGETARCH
+# Docker automatically sets TARGETARCH when building under Mac OSX - Make sure you
+# set this on other systems when building. eg.
+# docker build \
+#  --build-arg TARGETARCH=$(docker info --format '{{ .Architecture }}') \
+# "${DOCKER_ARGS[@]}" \
+#  -f Dockerfile.freeze \
+#  -t webbot .
 
-RUN echo "TARGETARCH is: $TARGETARCH" && \
+ARG TARGETARCH
+RUN if [ "$TARGETARCH" = "aarch64" ]; then TARGETARCH="arm64"; fi && echo "TARGETARCH is: $TARGETARCH" && \
     if [ "$TARGETARCH" = "amd64" ]; then \
         echo "Building on AMD64 (x86_64)"; \
         curl -fsSL https://www.virtualhere.com/sites/default/files/usbclient/vhclientx86_64 -o /usr/local/bin/vhclient || \
@@ -46,7 +52,6 @@ RUN echo "TARGETARCH is: $TARGETARCH" && \
     else \
         echo "Unknown architecture: $TARGETARCH"; \
     fi
-
 
 
 # -------------------------------

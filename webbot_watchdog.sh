@@ -54,7 +54,7 @@ ensure_image_exists() {
       log "Image $DOCKER_IMAGE_NAME already exists — skipping build."
   else
       log "Image $DOCKER_IMAGE_NAME not found — building... (with Dockerfile $DOCKER_FILE)"
-      docker build -f "$DOCKER_FILE" -t "$DOCKER_IMAGE_NAME" .
+      docker build  --build-arg TARGETARCH=$(docker info --format '{{ .Architecture }}') --no-cache -f "$DOCKER_FILE" -t "$DOCKER_IMAGE_NAME" .
       if [ $? -ne 0 ]; then
           log "ERROR: Docker image build failed!"
           return 1

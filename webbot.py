@@ -2701,7 +2701,7 @@ async def authenticate_with_playwright(main_url, headless=True, javascript_enabl
 
         if (configure.SUPER_STEALTH):
             logging.info("Running in Super Stealth Mode")
-            raise Exception("SUPER STEALTH MODE (configure.SUPER_STEALTH) NO LONGER SUPPORTED. ")
+            raise Exception("SUPER STEALTH MODE (configure.SUPER_STEALTH) NO LONGER SUPPORTED. (configure.py)")
             await stealth_async(page)
         else:
             logging.info("Running Simple Stealth Mode")

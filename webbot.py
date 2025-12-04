@@ -1,8 +1,8 @@
 import logging
 import time
 import configure
+import javascripts
 import pyautogui
-
 import asyncio
 from asyncio.exceptions import InvalidStateError
 
@@ -442,7 +442,7 @@ async def monitor_url(page):
         await asyncio.sleep(1)  # Check every second
 
 
-async def passkey_entry(page):
+async def passkey_entry_DEPRECATED(page):
     pin = "0000"    #configure.PASSKEYPIN
     logging.info("Passkey entry: Simulate touch and PIN **** @TODO")
     await asyncio.sleep(5)
@@ -457,15 +457,43 @@ async def passkey_entry(page):
             bomb_out("WE FAILED TO AUTHENTICATE")    
     logging.info("Looks like we got through authentication...")
 
+async def passkey_entry(page, webauth_event):
+    pin = "0000"    #configure.PASSKEYPIN
+
+    logging.info("Passkey entry: Waiting for WEBAUTH event")
+    try:
+        await webauth_event.wait(timeout=60.0) # Wait for the event with a timeout of 60 seconds
+        webauth = webauth_event.get()
+        logging.info(f"passkey_entry: We got something from our webauth event {webauth}")
+        webauth_event.clear()
+    except asyncio.TimeoutError:
+        logging.info("passkey_entry: TIMED OUT WAITING FOR WEBAUTH event")
+        bomb_out("NO WEBAUTH")    
+        
+    # No way of checking for OS Modal - so wait a little and pray...        
+    await asyncio.sleep(5)
+    pyautogui.typewrite(pin)
+    pyautogui.press("enter")
+    await asyncio.sleep(10)
+    if (not "voluntary_time_off" in page.url):
+        logging.info("WE HAVE NOT ARRIVED!!!!!!!!!!! WE MIGHT HAVE TO DO SOMETHING.... (one last chance)")
+        await asyncio.sleep(10)
+        if (not "voluntary_time_off" in page.url):
+            logging.info("WE HAVE NOT ARRIVED!!!!!!!!!!! DO SOMETHING")
+            bomb_out("WE FAILED TO AUTHENTICATE")    
+    logging.info("Looks like we got through authentication...")
+
+
+
 # Handle pass key setup prompts (prior to agreeing to setting this up and then the subsequent 'webauthn' login)
-async def handle_passkey_pin(page):
+async def handle_passkey_pin(page, webauth_event):
     while True:
         try:
             # Post registration
             signin_btn =  page.locator('button[data-testid="webauthn-signin-button"]')
             if await signin_btn.count() > 0 and await signin_btn.is_visible():
                 await signin_btn.click()
-                await passkey_entry(page)
+                await passkey_entry(page, webauth_event)
             else:
                 # Pre registration - use SMS OTPs
                 # Step 1: Click main page 'Remind me later'
@@ -2565,6 +2593,44 @@ async def watch_for_new_stealth_delay(stealth_delayer):
     await subscribe_and_process(stealth_delay_topic,
         lambda message: handle_stealth_delay_message(message, stealth_delayer))
 
+
+def handle_webauthn_request_factory(webauthevent):
+    logging.info("handle_webauthn_request_factory: Set up WebAuth Handler")
+    async def handle_webauthn_request(options):
+        #PROXY_URL = "http://127.0.0.1:5000/webauthn"
+        PROXY_URL = "http://127.0.0.1:5000/webauthn_proxy"
+        logging.info(f"Intercepted WebAuthn request (raise ValueError): {options}")
+
+        webauthevent.set("Event from handle_webauthn_request")
+
+        async with httpx.AsyncClient() as client:
+            # Forward the options to your Flask proxy
+            try:
+                resp = await client.post(PROXY_URL, json=options)
+                resp.raise_for_status()
+                # Optionally get any response back from your proxy
+                result = resp.json()
+                logging.info(f"Proxy response: {result}")
+            except Exception as e:
+                logging.info(f"Error sending to proxy: {e}")
+
+    return handle_webauthn_request
+
+def handle_console(msg):
+    text = msg.text
+
+    if text.startswith("[PW-DEBUG]"):
+        json_str = text.replace("[PW-DEBUG] ", "")
+        logging.info(f"🟡 Javascript console : {json_str}")
+    elif text.startswith("[PW-WEBAUTHN-REQUEST]"):
+        json_str = text.replace("[PW-WEBAUTHN-REQUEST] ", "")
+        logging.info(f"🔵 WebAuthn Request: {json_str}")
+
+    elif text.startswith("[PW-WEBAUTHN-RESPONSE]"):
+        json_str = text.replace("[PW-WEBAUTHN-RESPONSE] ", "")
+        logging.info(f"🟢 WebAuthn Response: {json_str}")
+
+
 async def authenticate_with_playwright(main_url, headless=True, javascript_enabled=True):
 
 
@@ -2605,6 +2671,8 @@ async def authenticate_with_playwright(main_url, headless=True, javascript_enabl
             )
             page = await context.new_page()
 
+        # Hook into javascript log.console (only used for debugging).
+        page.on("console", handle_console)
 
         # Intercept
         if (configure.LOG_INTERCEPTS):
@@ -2621,18 +2689,23 @@ async def authenticate_with_playwright(main_url, headless=True, javascript_enabl
             if (watch_url in url):
                 logging.info(f"log_response_headers: url: {url}")
                 logging.info(f"log_response_headers: Access-Control-Allow-*: {url} origin: {allow_origin} methods: {allow_methods} headers:{allow_headers} credentials:{allow_credentials}")
-        
+
+
+        # Handle webauthn requests.  (see also javascripts.py)      
+        webauthn_event = EventWrapper()
+        await page.expose_function("py_webauthn_hook", handle_webauthn_request_factory(webauthn_event))
+
         # Add response event listener 
         if (configure.LOG_RESPONSE_HEADERS):
             page.on("response", log_response_headers)
 
         if (configure.SUPER_STEALTH):
             logging.info("Running in Super Stealth Mode")
+            raise Exception("SUPER STEALTH MODE (configure.SUPER_STEALTH) NO LONGER SUPPORTED. ")
             await stealth_async(page)
         else:
             logging.info("Running Simple Stealth Mode")
-            await page.add_init_script(configure.FIREFOX_STEALTH_SCRIPT)
-
+            await page.add_init_script(javascripts.FIREFOX_STEALTH_SCRIPT + javascripts.WEBAUTH_HOOK)
 
         #asyncio.create_task(handle_404_page(page, "https://atoz.amazon.work/voluntary_time_off")) 
         #asyncio.create_task(handle_refresh(page, poll_timer_wrapper))
@@ -2668,7 +2741,7 @@ async def authenticate_with_playwright(main_url, headless=True, javascript_enabl
         asyncio.create_task(handle_otp_pin(page,verificaton_event))
         asyncio.create_task(handle_opt_device_select(page, configure.OTP_INDEX))
 
-        asyncio.create_task(handle_passkey_pin(page))
+        asyncio.create_task(handle_passkey_pin(page, webauthn_event))
 
         atoz_task = asyncio.create_task(handle_content(main_url, context, page, opportunity_event))
 

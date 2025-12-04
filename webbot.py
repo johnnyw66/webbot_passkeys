@@ -421,7 +421,7 @@ async def voice_monkey(message="INSERT YOUR MESSAGE HERE", device=configure.VOIC
 
 def bomb_out(reason:str=None):
     logging.info(f"***BOMB OUT*** REASON: '{reason if reason is not None else 'None given'}'")
-    import os
+    time.sleep(5)
     os._exit(-1)
  
 async def monitor_url(page):

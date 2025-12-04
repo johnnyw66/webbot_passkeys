@@ -320,8 +320,8 @@ navigator.credentials.get = async function(options) {
     const response = await window.py_webauthn_hook(options);
 
     // You can return a dummy value or the real assertion back
-    //return response || originalGet(options);
-    return originalGet(options);
+    return response || originalGet(options);
+    //return originalGet(options);
 };
 console.log('[PW-DEBUG]','SET UP WEB HOOKS');
 """

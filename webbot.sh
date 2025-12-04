@@ -29,7 +29,7 @@ touch /root/.Xauthority
 while [[ true ]]; do
  echo "*** WARNING - CHECK YOU HAVE vhclient running if using a remote FIDO device ***"
  python3 webbot.py $@
- sleep 1
+ sleep 5
 done
 
 

@@ -442,7 +442,7 @@ async def monitor_url(page):
         await asyncio.sleep(1)  # Check every second
 
 
-async def passkey_entry_DEPRECATED(page):
+async def passkey_entry(page):
     pin = "0000"    #configure.PASSKEYPIN
     logging.info("Passkey entry: Simulate touch and PIN **** @TODO")
     await asyncio.sleep(5)
@@ -457,23 +457,24 @@ async def passkey_entry_DEPRECATED(page):
             bomb_out("WE FAILED TO AUTHENTICATE")    
     logging.info("Looks like we got through authentication...")
 
-async def passkey_entry(page, webauth_event):
-    pin = "0000"    #configure.PASSKEYPIN
 
-    logging.info("Passkey entry: Waiting for WEBAUTH event")
-    try:
-        await webauth_event.wait(timeout=60.0) # Wait for the event with a timeout of 60 seconds
-        webauth = webauth_event.get()
-        logging.info(f"passkey_entry: We got something from our webauth event {webauth}")
-        webauth_event.clear()
-    except asyncio.TimeoutError:
-        logging.info("passkey_entry: TIMED OUT WAITING FOR WEBAUTH event")
-        bomb_out("NO WEBAUTH")    
+async def handle_webauthn(webauth_event):
+    while True:
+        try:
+            logging.info(f"⏰⏰⏰⏰⏰⏰⏰⏰⏰⏰⏰⏰ Waiting for WebAuthn ⏰⏰⏰⏰⏰⏰⏰⏰⏰⏰⏰⏰⏰")
+            await webauth_event.wait(timeout=None) 
+            webauth = webauth_event.get()
+            logging.info(f"passkey_entry: We got something from our webauth event {webauth}")
+            webauth_event.clear()
+            await asyncio.sleep(5)
+            pyautogui.typewrite("0000")
+            pyautogui.press("enter")
+        except Exception:
+            bomb_out("PROBLEM WITH WEBAUTH")    
         
-    # No way of checking for OS Modal - so wait a little and pray...        
-    await asyncio.sleep(5)
-    pyautogui.typewrite(pin)
-    pyautogui.press("enter")
+
+
+async def wait_for_movement():
     await asyncio.sleep(10)
     if (not "voluntary_time_off" in page.url):
         logging.info("WE HAVE NOT ARRIVED!!!!!!!!!!! WE MIGHT HAVE TO DO SOMETHING.... (one last chance)")
@@ -493,7 +494,8 @@ async def handle_passkey_pin(page, webauth_event):
             signin_btn =  page.locator('button[data-testid="webauthn-signin-button"]')
             if await signin_btn.count() > 0 and await signin_btn.is_visible():
                 await signin_btn.click()
-                await passkey_entry(page, webauth_event)
+                await wait_for_movement()
+                #await passkey_entry(page)
             else:
                 # Pre registration - use SMS OTPs
                 # Step 1: Click main page 'Remind me later'
@@ -2611,9 +2613,11 @@ def handle_webauthn_request_factory(webauthevent):
                 # Optionally get any response back from your proxy
                 result = resp.json()
                 logging.info(f"Proxy response: {result}")
+                return result
             except Exception as e:
                 logging.info(f"Error sending to proxy: {e}")
-
+                return None
+                
     return handle_webauthn_request
 
 def handle_console(msg):
@@ -2718,6 +2722,7 @@ async def authenticate_with_playwright(main_url, headless=True, javascript_enabl
         #mqtt_sms_task = receive_sms(verificaton_event, opportunity_event)
         #asyncio.gather(mqtt_sms_task)
 
+
         # MQTT event handling. 
         asyncio.create_task(receive_sms(verificaton_event, opportunity_event))
         asyncio.create_task(receive_captcha_answer(answer_event)),
@@ -2742,6 +2747,7 @@ async def authenticate_with_playwright(main_url, headless=True, javascript_enabl
         asyncio.create_task(handle_opt_device_select(page, configure.OTP_INDEX))
 
         asyncio.create_task(handle_passkey_pin(page, webauthn_event))
+        asyncio.create_task(handle_webauthn(webauthn_event)),
 
         atoz_task = asyncio.create_task(handle_content(main_url, context, page, opportunity_event))
 

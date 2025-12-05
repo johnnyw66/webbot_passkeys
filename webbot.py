@@ -474,15 +474,15 @@ async def handle_webauthn(webauth_event):
         
 
 
-async def wait_for_movement():
-    await asyncio.sleep(10)
-    if (not "voluntary_time_off" in page.url):
+async def wait_for_movement(page):
+    await asyncio.sleep(20)
+    if (not "atoz.amazon.work" in page.url):
         logging.info("WE HAVE NOT ARRIVED!!!!!!!!!!! WE MIGHT HAVE TO DO SOMETHING.... (one last chance)")
-        await asyncio.sleep(10)
-        if (not "voluntary_time_off" in page.url):
+        await asyncio.sleep(20)
+        if (not "atoz.amazon.work" in page.url):
             logging.info("WE HAVE NOT ARRIVED!!!!!!!!!!! DO SOMETHING")
             bomb_out("WE FAILED TO AUTHENTICATE")    
-    logging.info("Looks like we got through authentication...")
+    logging.info("✅✅✅✅✅✅✅✅ Looks like we got through authentication...✅✅✅✅✅✅✅✅")
 
 
 
@@ -494,7 +494,7 @@ async def handle_passkey_pin(page, webauth_event):
             signin_btn =  page.locator('button[data-testid="webauthn-signin-button"]')
             if await signin_btn.count() > 0 and await signin_btn.is_visible():
                 await signin_btn.click()
-                await wait_for_movement()
+                await wait_for_movement(page)
                 #await passkey_entry(page)
             else:
                 # Pre registration - use SMS OTPs

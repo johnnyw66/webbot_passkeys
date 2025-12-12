@@ -1,0 +1,309 @@
+﻿
+<script src="https://cdn.jsdelivr.net/npm/mqtt/dist/mqtt.min.js"></script>
+
+<form id="requirements-form">
+
+    <!-- Opportunity Type (Radio Buttons) -->
+
+    <fieldset style="display: none;">
+        <legend>Opportunity Type</legend>
+        <label for="time-off">
+            <input type="radio" id="time-off" name="opportunity-type" value="TIME_OFF"> VTO
+        </label><br>
+        <label for="extra-time">
+            <input type="radio" id="extra-time" name="opportunity-type" value="EXTRA_TIME" checked> VET
+        </label>
+    </fieldset>
+
+    <!-- Days of the Week (Multiple Select) -->
+
+    <fieldset>
+        <legend>VET Days of the Week</legend>
+        <label for="monday">
+            <input type="checkbox" id="monday" name="days" value="Monday" checked> Monday
+        </label><br>
+        <label for="tuesday">
+            <input type="checkbox" id="tuesday" name="days" value="Tuesday" checked> Tuesday
+        </label><br>
+        <label for="wednesday">
+            <input type="checkbox" id="wednesday" name="days" value="Wednesday" checked> Wednesday
+        </label><br>
+        <label for="thursday">
+            <input type="checkbox" id="thursday" name="days" value="Thursday"> Thursday
+        </label><br>
+        <label for="friday">
+            <input type="checkbox" id="friday" name="days" value="Friday"> Friday
+        </label><br>
+        <label for="saturday">
+            <input type="checkbox" id="saturday" name="days" value="Saturday"> Saturday
+        </label><br>
+        <label for="sunday">
+            <input type="checkbox" id="sunday" name="days" value="Sunday"> Sunday
+        </label>
+    </fieldset>
+
+
+    <fieldset>
+        <legend>VET Flag</legend>
+        <label for="vetflag">
+            <input type="checkbox" id="vetflag" name="vetflag">Grab VETs
+        </label><br>
+    </fieldset>
+
+    <!-- Max Duration -->
+    <label for="max-duration">Max Duration (in minutes):</label>
+    <input type="number" id="max-duration" name="max-duration" value="360">
+
+    <!-- Min Duration -->
+    <label for="min-duration">Min Duration (in minutes):</label>
+    <input type="number" id="min-duration" name="min-duration" value="300">
+
+    <!-- Notice -->
+    <label for="notice">VET Notice (in hours 2 to 24):</label>
+    <input type="number" id="notice" name="notice" value="8" step="0.25">
+
+    <!-- Start Time -->
+    <label for="start-time-pattern">Start Time Pattern (e.g. 0[1-3]:**):</label>
+    <input type="text" id="start-time-pattern" name="start-time-pattern" value="**:**" required>
+
+    <!-- Start Date -->
+    <label for="start-date">Start Date:</label>
+    <input type="date" id="start-date" name="start-date" value="2025-04-14" required>
+
+    <!-- End Date -->
+    <label for="end-date">End Date:</label>
+    <input type="date" id="end-date" name="end-date" value="2025-04-16" required>
+
+    <button type="submit">Submit</button>
+</form>
+
+<div id="result_sendform"></div>
+<div id="result_sendvet"></div>
+
+<script src="configure.js" type="text/javascript"></script>
+
+<script language="javascript" type="text/javascript">// Read secrets from URL fragment instead of hardcoding them here
+    // for example - paste below into your browser URL (modify path portion first)
+    // file:///Users/johnny/webbot_passkeys/schedule.htm#mqtt_host=linodeusercontent.com&employee_id=1234567&mqtt_username=MQTTUSER&mqtt_secret=MQTTPASSWD
+
+    const params = new URLSearchParams(location.hash.substring(1));
+
+    const host = params.get("mqtt_host");
+    const employee_id = params.get("employee_id");
+    const mqtt_username = params.get("mqtt_username");
+    const mqtt_secret = params.get("mqtt_secret");
+
+    // Optional: Show error if missing
+    if (!host || !employee_id || !mqtt_username || !mqtt_secret) {
+        document.body.innerHTML = "<b>Missing credentials in URL fragment.</b>";
+    }
+ </script>
+
+<script>
+  
+    const mqtt_broker_url = `mqtt://${host}:1884`;  
+    const mqttRequirementsTopic = 'setclaimschedule/vetrequirements';  // The topic to publish to
+    const mqttGrabvetsTopic = `opportunities/${employee_id}/grabvetsflag`;  // The topic to publish to
+
+    // Create an MQTT client
+    const client = mqtt.connect(mqtt_broker_url, {
+        username: mqtt_username,
+        password: mqtt_secret,
+        //protocol: 'wss' // Using WebSocket Secure for browser compatibility
+    });
+
+
+    client.on('connect', function () {
+        console.log('Connected to MQTT broker');
+        client.subscribe(mqttRequirementsTopic, function (err) {
+            if (err) {
+                console.error('Subscription error:', err);
+            } else {
+                console.log('Subscribed to topic:', mqttRequirementsTopic);
+            }
+        });
+        client.subscribe(mqttGrabvetsTopic, function (err) {
+            if (err) {
+                console.error('Subscription error:', err);
+            } else {
+                console.log('Subscribed to topic:', mqttGrabvetsTopic);
+            }
+        });
+    });
+
+    client.on('message', function (topic, message) {
+        if (topic === mqttRequirementsTopic) {
+            try {
+                const data = JSON.parse(message.toString());
+                console.log(`${topic} Received:`, data);
+                populateForm(data);
+            } catch (e) {
+                console.error('Invalid JSON:', e);
+            }
+        }
+        if (topic === mqttGrabvetsTopic) {
+            try {
+                const vetgrab = message.toString();
+                console.log(`${topic} Received:`, vetgrab);
+                document.querySelector('input[name="vetflag"]').checked = vetgrab === "1";
+
+            } catch (e) {
+                console.error('Invalid JSON:', e);
+            }
+        }
+
+    });
+
+
+    document.getElementById("requirements-form").onsubmit = async function (e) {
+        if (!validateStartTimePattern()) {
+            alert("Invalid Time Pattern! Eg. '**:**' - Wildcard match, '0[5-7]:00' - matches 05:00, 06:00 and 07:00")
+            return
+        }
+
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = {
+            opportunity_type: formData.get('opportunity-type'),
+            days: formData.getAll('days'),
+            max_duration: formData.get('max-duration'),
+            min_duration: formData.get('min-duration'),
+            notice: formData.get('notice'),
+            start_date: formData.get('start-date'),
+            end_date: formData.get('end-date'),
+            start_time_pattern: formData.get('start-time-pattern'),
+
+        };
+
+        const jsonData = JSON.stringify(data);
+        console.log(jsonData);
+        console.log("Publishing Retained!")
+        client.publish(mqttRequirementsTopic, jsonData, { retain: true }, function (err) {
+            if (err) {
+                console.log('Error publishing message:', err);
+                document.getElementById("result_sendform").innerText = 'Error sending data to MQTT broker.';
+            } else {
+                console.log('Data published to MQTT topic');
+                document.getElementById("result_sendform").innerText = 'Requirements Data successfully sent to MQTT broker.';
+                setTimeout(() => {
+                    document.getElementById("result_sendform").innerText = "";
+                }, 5000);
+
+
+            }
+        });
+
+
+        const flagdata = formData.get('vetflag') === 'on' ? "1" : "0";
+
+
+        console.log(`Publish grabvets ${flagdata}`)
+        client.publish(mqttGrabvetsTopic, flagdata, { retain: true }, function (err) {
+            if (err) {
+                console.log('Error publishing message:', err);
+                document.getElementById("result_sendvet").innerText = 'Error sending data to MQTT broker.';
+            } else {
+                console.log('Data published to MQTT topic');
+                document.getElementById("result_sendvet").innerText = 'Vets Flag Data successfully sent to MQTT broker.';
+                setTimeout(() => {
+                    document.getElementById("result_sendvet").innerText = "";
+                }, 5000);
+
+
+            }
+        });
+    };
+
+    function validateStartTimePattern() {
+        let pattern = document.getElementById("start-time-pattern").value.trim();
+
+        return isValidTimePattern(pattern);
+    }
+
+    function isValidTimePattern(pattern) {
+        if (!pattern || pattern.trim() === "") {
+            pattern = "**:**";
+        } else {
+            pattern = pattern.trim();
+        }
+
+        const parts = pattern.split(":");
+        if (parts.length !== 2) return false;
+
+        const expandToken = (token) => {
+            if (token === "*") return ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
+            if (/^[0-9]$/.test(token)) return [token];
+            if (/^\[\d-\d\]$/.test(token)) {
+                const [start, end] = token.slice(1, -1).split("-").map(Number);
+                if (start > end) return null;
+                return Array.from({ length: end - start + 1 }, (_, i) => String(start + i));
+            }
+            return null;
+        };
+
+        const expandPart = (part) => {
+            const regex = /(\*|[0-9]|\[\d-\d\])/g;
+            const tokens = [];
+            let match;
+            let fullMatch = "";
+            while ((match = regex.exec(part)) !== null) {
+                tokens.push(match[0]);
+                fullMatch += match[0];
+            }
+            if (fullMatch !== part) return null;
+
+            const expanded = tokens.map(expandToken);
+            if (expanded.includes(null)) return null;
+
+            // Return full list of possible digit strings this part can become
+            return expanded.reduce((acc, digits) => {
+                const next = [];
+                for (const a of acc) {
+                    for (const b of digits) {
+                        next.push(a + b);
+                    }
+                }
+                return next;
+            }, [""]);
+        };
+
+        const [hourPart, minutePart] = parts;
+        const hours = expandPart(hourPart);
+        const minutes = expandPart(minutePart);
+
+        if (!hours || !minutes) return false;
+
+        const validHours = hours.some(h => /^\d{2}$/.test(h) && Number(h) >= 0 && Number(h) <= 23);
+        const validMinutes = minutes.some(m => /^\d{2}$/.test(m) && Number(m) >= 0 && Number(m) <= 59);
+
+        return validHours && validMinutes;
+    }
+
+
+    function populateForm(data) {
+        // Opportunity Type (radio)
+        if (data.opportunity_type) {
+            const radios = document.querySelectorAll('input[name="opportunity-type"]');
+            radios.forEach(r => {
+                r.checked = (r.value === data.opportunity_type);
+            });
+        }
+
+        // Days (checkbox)
+        if (Array.isArray(data.days)) {
+            const checkboxes = document.querySelectorAll('input[name="days"]');
+            checkboxes.forEach(box => {
+                box.checked = data.days.includes(box.value);
+            });
+        }
+
+        // Set values
+        if (data.max_duration) document.querySelector('input[name="max-duration"]').value = data.max_duration;
+        if (data.min_duration) document.querySelector('input[name="min-duration"]').value = data.min_duration;
+        if (data.notice) document.querySelector('input[name="notice"]').value = data.notice;
+        if (data.start_date) document.querySelector('input[name="start-date"]').value = data.start_date;
+        if (data.end_date) document.querySelector('input[name="end-date"]').value = data.end_date;
+        if (data.start_time_pattern) document.querySelector('input[name="start-time-pattern"]').value = data.start_time_pattern;
+
+
+    }</script>

@@ -443,7 +443,7 @@ async def monitor_url(page):
 
 
 async def passkey_entry(page):
-    pin = "0000"    #configure.PASSKEYPIN
+    pin = configure.PASSKEYPIN
     logging.info("Passkey entry: Simulate touch and PIN **** @TODO")
     await asyncio.sleep(5)
     pyautogui.typewrite(pin)

@@ -1,8 +1,6 @@
-# ---
-
 **Amazon A-to-Z Automation WebBot**
 
-A high-performance Python-based automation suite designed to monitor, notify, and "grab" work opportunities (VTO/VET) from the Amazon A-to-Z platform. The system utilizes Playwright for browser automation, GraphQL for efficient data fetching, and MQTT for real-time remote control and health monitoring.
+A high-performance Python-based automation suite designed to monitor, notify, and "grab" work opportunities (VTO/VET) from the Amazon A-to-Z platform. The system utilises Playwright for browser automation, GraphQL for efficient data fetching, and MQTT for real-time remote control and health monitoring.
 
 ## **🚀 Key Features**
 
@@ -32,6 +30,145 @@ A high-performance Python-based automation suite designed to monitor, notify, an
 2. **MQTT Broker:** (e.g., Mosquitto) for status and remote control.  
 3. **2Captcha API Key:** Required if your login flow triggers AWS Captchas.  
 4. **Python 3.10+:** (If running locally without Docker).
+
+# ---
+## Webbot – Amazon AtoZ Opportunity Monitor
+
+This project demonstrates how to build a Python-based automation system that reviews and reports job opportunities available to Amazon associates working at logistics centres.
+
+Because Amazon’s authentication flow and page structure change frequently, parts of this project may eventually stop working. However, the codebase is intended primarily as a practical example of writing resilient Playwright automation scripts and adapting to evolving web platforms.
+
+Over the years, these scripts have evolved alongside changes made by the Amazon AtoZ platform:
+
+Initially: simple polling of a REST API
+
+Later: GraphQL polling every 5 minutes
+
+Authentication: username/password every 15 minutes
+
+Currently: passkey-based authentication approximately every 30 days
+
+The system runs fully automatically. If two independent instances are deployed, the monitoring and opportunity capture process remains resilient and fault-tolerant.
+
+Last known successful use: January 2026
+
+Authentication History
+
+Previously, Amazon’s AtoZ system used a layered authentication approach:
+
+Username + password
+
+SMS-based Two-Factor Authentication (2FA)
+
+CAPTCHA challenges
+
+While secure, this approach was complex and depended on external services, increasing friction and potential failure points.
+
+The current system is transitioning to passkeys, which use cryptographic credentials stored directly on a device (a “digital key”). Examples include:
+
+Fingerprint readers (phone or PC)
+
+YubiKeys
+
+WebAuth/FIDO hardware tokens (e.g., Pico FIDO)
+
+During login, the browser interacts with the passkey device to confirm identity without requiring passwords or SMS codes.
+
+The Pico FIDO device is particularly useful for automation because it can be configured to authenticate without physical interaction. A PIN is still required, but this can be automated via Python.
+
+Pico FIDO Gotcha (December 2025)
+
+As of late December 2025, the Pico FIDO developer began charging for the configuration application required to modify passkey parameters.
+
+Previously, an online “commissioner” tool allowed configuration of parameters that disabled the physical touch requirement. This made full automation straightforward.
+
+To avoid this additional cost, you must now:
+
+build the Pico firmware from source
+
+modify the parameters manually
+
+compile and flash a custom binary
+
+This adds complexity but remains possible because the firmware is open source.
+
+Watch this space.
+
+Setup
+1. Create configuration file
+
+Copy the example configuration:
+
+example_configure.py → configure.py
+
+
+Edit:
+
+ATOZ_USERNAME
+ATOZ_EMPLOYEE_ID
+
+MQTT_USERNAME
+MQTT_SECRET
+MQTT_BROKER
+
+
+If not using passkeys, also set:
+
+ATOZ_PASSWORD
+TWO_CAPTCHA_API_KEY
+
+
+(You can obtain a key at 2captcha.com)
+
+You will also need an MQTT SMS gateway:
+
+https://github.com/johnnyw66/MQTT-SMS-Gateway
+
+2. Install requirements
+python3 -m pip install -r requirements.txt
+
+Running
+Simple run
+python3 webbot.py
+
+Recommended (resilient) run
+
+Use Docker and the watchdog script.
+
+Build the container (one time only)
+./docker_build.sh
+
+
+(Rebuild only if credentials or configuration change)
+
+Start
+./webbot_watchdog.sh
+
+Building the Pico FIDO Device
+
+To flash firmware onto a Raspberry Pi Pico:
+
+Unplug the device
+
+Hold BOOTSEL
+
+Plug into USB
+
+A drive appears (RPI-RP2 or RP2350)
+
+Copy the .uf2 file to the drive
+
+Device reboots and appears as Pico Key
+
+LED will blink periodically when ready.
+
+Documentation:
+
+https://www.picokeys.com/getting-started/
+
+https://www.picokeys.com/picokeyapp/
+
+
 
 ## ---
 

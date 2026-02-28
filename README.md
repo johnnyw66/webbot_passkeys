@@ -1,37 +1,3 @@
-**Amazon A-to-Z Automation WebBot**
-
-A high-performance Python-based automation suite designed to monitor, notify, and "grab" work opportunities (VTO/VET) from the Amazon A-to-Z platform. The system utilises Playwright for browser automation, GraphQL for efficient data fetching, and MQTT for real-time remote control and health monitoring.
-
-## **🚀 Key Features**
-
-* **Automated Opportunity Grabbing:** Monitors and claims Voluntary Time Off (VTO) and Voluntary Extra Time (VET) using direct GraphQL mutations.  
-* **Intelligent Requirements Engine:** Uses a **Decorator Pattern** to chain complex logic (e.g., "Only grab VET if it's on a Tuesday, longer than 5 hours, and starts after 08:00").  
-* **Anti-Bot & Stealth:** Integrates Playwright stealth scripts, custom User-Agents, and human-like delay logic to minimize detection.  
-* **Captcha Solving:** Automated AWS WAF Captcha handling via the **2Captcha** API.  
-* **Multi-Channel Notifications:** Supports Email alerts (with IMAP peeking), MQTT status updates, and Voice Monkey (Alexa) announcements.  
-* **Containerized Watchdog:** Includes a Bash-based watchdog script that monitors a Docker container via MQTT heartbeats and auto-restarts on failure.  
-* **Remote Management:** Dynamically update requirements or trigger "claims" via MQTT topics while the bot is running.
-
-## ---
-
-**🛠️ Tech Stack**
-
-* **Language:** Python 3.10+  
-* **Automation:** Playwright (Chromium/Firefox)  
-* **Networking:** HTTPX (Async), MQTT (aiomqtt), IMAP  
-* **Infrastructure:** Docker, VirtualHere (USB/Hardware Auth Passthrough)  
-* **Logic:** Decorator Pattern for requirement matching
-
-## ---
-
-**📋 Prerequisites**
-
-1. **Docker:** For running the containerized environment.  
-2. **MQTT Broker:** (e.g., Mosquitto) for status and remote control.  
-3. **2Captcha API Key:** Required if your login flow triggers AWS Captchas.  
-4. **Python 3.10+:** (If running locally without Docker).
-
-# ---
 ## Webbot – Amazon AtoZ Opportunity Monitor
 
 This project demonstrates how to build a Python-based automation system that reviews and reports job opportunities available to Amazon associates working at logistics centres.
@@ -168,6 +134,41 @@ https://www.picokeys.com/getting-started/
 
 https://www.picokeys.com/picokeyapp/
 
+
+**Amazon A-to-Z Automation WebBot**
+
+A high-performance Python-based automation suite designed to monitor, notify, and "grab" work opportunities (VTO/VET) from the Amazon A-to-Z platform. The system utilises Playwright for browser automation, GraphQL for efficient data fetching, and MQTT for real-time remote control and health monitoring.
+
+## **🚀 Key Features**
+
+* **Automated Opportunity Grabbing:** Monitors and claims Voluntary Time Off (VTO) and Voluntary Extra Time (VET) using direct GraphQL mutations.  
+* **Intelligent Requirements Engine:** Uses a **Decorator Pattern** to chain complex logic (e.g., "Only grab VET if it's on a Tuesday, longer than 5 hours, and starts after 08:00").  
+* **Anti-Bot & Stealth:** Integrates Playwright stealth scripts, custom User-Agents, and human-like delay logic to minimize detection.  
+* **Captcha Solving:** Automated AWS WAF Captcha handling via the **2Captcha** API.  
+* **Multi-Channel Notifications:** Supports Email alerts (with IMAP peeking), MQTT status updates, and Voice Monkey (Alexa) announcements.  
+* **Containerized Watchdog:** Includes a Bash-based watchdog script that monitors a Docker container via MQTT heartbeats and auto-restarts on failure.  
+* **Remote Management:** Dynamically update requirements or trigger "claims" via MQTT topics while the bot is running.
+
+## ---
+
+**🛠️ Tech Stack**
+
+* **Language:** Python 3.10+  
+* **Automation:** Playwright (Chromium/Firefox)  
+* **Networking:** HTTPX (Async), MQTT (aiomqtt), IMAP  
+* **Infrastructure:** Docker, VirtualHere (USB/Hardware Auth Passthrough)  
+* **Logic:** Decorator Pattern for requirement matching
+
+## ---
+
+**📋 Prerequisites**
+
+1. **Docker:** For running the containerized environment.  
+2. **MQTT Broker:** (e.g., Mosquitto) for status and remote control.  
+3. **2Captcha API Key:** Required if your login flow triggers AWS Captchas.  
+4. **Python 3.10+:** (If running locally without Docker).
+
+# ---
 
 
 ## ---

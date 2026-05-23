@@ -606,7 +606,7 @@ async def handle_aa_login(page):
 
             await page.wait_for_selector(input_selector, timeout=3000)
             logging.info("FOUND AA LOGIN")
-            await page.fill('input[name="login"]', configure.ATOZ_USERNAME)
+            await page.fill('#associate-login-input', configure.ATOZ_USERNAME)
             #await page.fill('input[name="password"]', configure.ATOZ_PASSWORD)
             # Submit the credentials
             await page.click('button[type="submit"]')

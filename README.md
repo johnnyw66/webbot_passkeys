@@ -22,45 +22,32 @@ Authentication History
 
 Previously, Amazon’s AtoZ system used a layered authentication approach:
 
-Username + password
++ Username + password
 
-SMS-based Two-Factor Authentication (2FA)
++ SMS-based Two-Factor Authentication (2FA)
 
-CAPTCHA challenges
++ CAPTCHA challenges
 
 While secure, this approach was complex and depended on external services, increasing friction and potential failure points.
 
 The current system is transitioning to passkeys, which use cryptographic credentials stored directly on a device (a “digital key”). Examples include:
 
-Fingerprint readers (phone or PC)
++ Fingerprint readers (phone or PC)
 
-YubiKeys
++ YubiKeys
 
-WebAuth/FIDO hardware tokens (e.g., Pico FIDO)
++ WebAuth/FIDO hardware tokens (e.g., **Pico FIDO**)
 
 During login, the browser interacts with the passkey device to confirm identity without requiring passwords or SMS codes.
 
-The Pico FIDO device is particularly useful for automation because it can be configured to authenticate without physical interaction. A PIN is still required, but this can be automated via Python.
+The **Pico FIDO** device is particularly useful for automation because it can be configured to authenticate without physical interaction. A PIN is still required, but once registered with AtoZ by hand, this can be automated via Python.
 
-Pico FIDO Gotcha (December 2025)
 
-As of late December 2025, the Pico FIDO developer began charging for the configuration application required to modify passkey parameters.
+https://www.picokeys.com/pico-fido/
 
-Previously, an online “commissioner” tool allowed configuration of parameters that disabled the physical touch requirement. This made full automation straightforward.
 
-To avoid this additional cost, you must now:
+## Setup
 
-build the Pico firmware from source
-
-modify the parameters manually
-
-compile and flash a custom binary
-
-This adds complexity but remains possible because the firmware is open source.
-
-Watch this space.
-
-Setup
 1. Create configuration file
 
 Copy the example configuration:

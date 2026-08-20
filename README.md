@@ -6,13 +6,11 @@ Because Amazon’s authentication flow and page structure change frequently, par
 
 Over the years, these scripts have evolved alongside changes made by the Amazon AtoZ platform:
 
-Initially: simple polling of a REST API
-
-Later: GraphQL polling every 5 minutes
-
-Authentication: username/password every 15 minutes
-
-Currently: passkey-based authentication approximately every 30 days
++ Initially: simple polling of a REST API
++ Later: GraphQL polling every 5 minutes
++ Authentication Completed with username/password and SMS every 15 minutes
++ Captcha challenges were introduced to stop automation - circumvented by using the 2Captcha service.
++ Passkey-based authentication introduced in 2025 and SMS/Captcha challenges were dropped - Using Pico Fido keys reduced authentication approximately every 30 days
 
 The system runs fully automatically. If two independent instances are deployed, the monitoring and opportunity capture process remains resilient and fault-tolerant.
 
